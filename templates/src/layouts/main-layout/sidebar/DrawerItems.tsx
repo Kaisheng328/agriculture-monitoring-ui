@@ -1,12 +1,12 @@
-import Box from '@mui/material/Box';
+
 import Link from '@mui/material/Link';
 import List from '@mui/material/List';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';
-import Button from '@mui/material/Button';
+
 import ListItem from '@mui/material/ListItem';
-import IconButton from '@mui/material/IconButton';
+
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -16,8 +16,8 @@ import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import sitemap from 'routes/sitemap';
 import Logo from 'assets/images/Logo.png';
-import Profile from 'assets/images/Profile.png';
-import DrawerCardImg from 'assets/images/lighting.png';
+
+
 
 interface DrawerItemsProps {
   expand: boolean;
@@ -127,7 +127,7 @@ const DrawerItems = ({ expand }: DrawerItemsProps) => {
         ))}
       </List>
 
-      <Box mt="auto" px={2.35} pb={5}>
+      {/* <Box mt="auto" px={2.35} pb={5}>
         <Stack
           position="relative"
           mt="auto"
@@ -168,7 +168,7 @@ const DrawerItems = ({ expand }: DrawerItemsProps) => {
             <IconifyIcon icon="majesticons:logout" color="text.disabled" />
           </IconButton>
         </Stack>
-      </Box>
+      </Box> */}
     </>
   );
 };

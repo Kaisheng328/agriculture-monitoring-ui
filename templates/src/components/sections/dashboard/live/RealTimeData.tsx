@@ -9,6 +9,7 @@ interface RealTimeDataProps {
     temperature: number;
     humidity: number;
     soil_moisture: number;
+    is_abnormal: boolean;
   };
   sx?: SxProps;
 }

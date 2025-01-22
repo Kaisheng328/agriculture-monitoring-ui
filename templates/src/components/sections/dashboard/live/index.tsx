@@ -31,7 +31,7 @@ const RealTime = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('http://localhost:5000/history', {
+        const response = await fetch('http://localhost:8080/history', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

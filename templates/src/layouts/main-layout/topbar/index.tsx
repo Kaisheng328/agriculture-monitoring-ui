@@ -9,9 +9,12 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
-import ProfileMenu from './ProfileMenu';
-import LanguageSelect from './LanguageSelect';
+// import ProfileMenu from './ProfileMenu';
+// import LanguageSelect from './LanguageSelect';
 import Logo from 'assets/images/Logo.png';
+import React, { useEffect, useState } from 'react';
+import paths from 'routes/paths';
+import { useNavigate } from 'react-router-dom';
 
 interface TopbarProps {
   expand: boolean;
@@ -30,12 +33,49 @@ const Topbar = ({
   drawerWidth,
   miniDrawerWidth,
 }: TopbarProps) => {
+  const [abnormalCount, setAbnormalCount] = useState(0); // Total abnormal notifications
+  const [unseenCount, setUnseenCount] = useState(0); // Badge content for unseen notifications
+  const navigate = useNavigate();
+
+  const fetchAbnormalCount = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/abnormal-count', {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch abnormal count');
+      }
+      const data = await response.json();
+      setAbnormalCount(data.count);
+
+      // Update unseen notifications if new ones exist
+      setUnseenCount((prevUnseen) => {
+        const newNotifications = data.count - (abnormalCount - prevUnseen); // Calculate new unseen count
+        return newNotifications >= 0 ? newNotifications : 0;
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  useEffect(() => {
+    fetchAbnormalCount(); // Initial fetch
+    const intervalId = setInterval(fetchAbnormalCount, 5000); // Fetch every 5 seconds
+    return () => clearInterval(intervalId);
+  }, [abnormalCount]); // Depend on abnormalCount to keep fetching dynamically
+
   const handleDrawerExpand = () => {
     setExpand(!expand);
   };
 
   const handleMobileOpen = () => {
     setMobileOpen(!mobileOpen);
+  };
+
+  const handleNotificationClick = () => {
+    setUnseenCount(0); // Reset badge content for unseen notifications
+    navigate(paths.notification); // Navigate to the notifications page
   };
 
   return (
@@ -103,17 +143,17 @@ const Topbar = ({
         </Stack>
 
         <Stack spacing={{ xs: 1, sm: 2 }} alignItems="center">
-          <LanguageSelect />
-          <IconButton>
+          {/* <LanguageSelect /> */}
+          <IconButton onClick={handleNotificationClick}>
             <Badge
               color="error"
-              badgeContent={2}
+              badgeContent={unseenCount}
               sx={{ '& .MuiBadge-badge': { top: 6, right: 2 } }}
             >
               <IconifyIcon icon="mdi:bell-outline" />
             </Badge>
           </IconButton>
-          <ProfileMenu />
+          {/* <ProfileMenu /> */}
         </Stack>
       </Stack>
     </AppBar>

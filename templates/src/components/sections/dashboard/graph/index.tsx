@@ -8,7 +8,7 @@ import CombinedGraph from './combinedGraph';
 
 const LineGraph = () => {
   const [historyData, setHistoryData] = useState<
-    { timestamp: string; temperature: number; humidity: number; soil_moisture: number }[]
+    { timestamp: string; temperature: number; humidity: number; soil_moisture: number; is_abnormal: boolean}[]
   >([]);
   const [filteredData, setFilteredData] = useState(historyData);
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
@@ -18,7 +18,7 @@ const LineGraph = () => {
   const fetchHistoryData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/history', {
+      const response = await fetch('http://localhost:8080/history', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });

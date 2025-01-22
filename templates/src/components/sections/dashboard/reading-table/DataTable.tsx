@@ -16,6 +16,7 @@ interface RowData {
   temperature: number;
   humidity: number;
   soil_moisture: number;
+  is_abnormal: boolean;
 }
 
 const columns: GridColDef[] = [
@@ -84,7 +85,7 @@ const DataTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:5000/history', {
+      const response = await fetch('http://localhost:8080/history', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
