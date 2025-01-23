@@ -106,7 +106,7 @@ def get_history():
     return jsonify([
         {
             "id": record.id,
-            "timestamp": record.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            "timestamp": record.timestamp.astimezone(MALAYSIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
             "temperature": record.temperature,
             "humidity": record.humidity,
             "soil_moisture": record.soil_moisture,
