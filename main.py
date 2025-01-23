@@ -24,11 +24,6 @@ class TimestampTZ(TypeDecorator):
             value = datetime.datetime.now(MALAYSIA_TZ)
         return value.astimezone(pytz.UTC)
 
-    def process_result_value(self, value, dialect):
-        if value is not None:
-            return value.replace(tzinfo=pytz.UTC).astimezone(MALAYSIA_TZ)
-        return value
-
 # Database configuration
 database_url = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
@@ -106,7 +101,7 @@ def get_history():
     return jsonify([
         {
             "id": record.id,
-            "timestamp": record.timestamp.astimezone(MALAYSIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+            "timestamp": record.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
             "temperature": record.temperature,
             "humidity": record.humidity,
             "soil_moisture": record.soil_moisture,
