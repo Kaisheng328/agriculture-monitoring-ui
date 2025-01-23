@@ -50,7 +50,7 @@ def receive_data():
         
         # Write to Database
         new_entry = SensorData(
-            timestamp=datetime.datetime.now(),
+            timestamp=datetime.datetime.now(MALAYSIA_TZ),
             temperature=data['temperature'],
             humidity=data['humidity'],
             soil_moisture=data['soil_moisture'],
