@@ -4,10 +4,11 @@ import datetime
 from flask_socketio import SocketIO
 from flask_cors import CORS
 import os
+import pytz
 from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
-
+MALAYSIA_TZ = pytz.timezone('Asia/Kuala_Lumpur')
 # Database configuration
 database_url = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
@@ -18,7 +19,7 @@ socketio = SocketIO(app)
 # Database model
 class SensorData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=datetime.datetime.now)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.datetime.now(MALAYSIA_TZ))
     temperature = db.Column(db.Float, nullable=False)
     humidity = db.Column(db.Float, nullable=False)
     soil_moisture = db.Column(db.Float, nullable=False)
@@ -33,7 +34,7 @@ with app.app_context():
 def receive_data():
     data = request.json
     if data:
-        timestamp = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.datetime.now(MALAYSIA_TZ).strftime('%Y-%m-%d %H:%M:%S')
         # Check for abnormalities
         is_abnormal = False
         if data['temperature'] < 20 or data['temperature'] > 50:
