@@ -6,20 +6,39 @@ from flask_cors import CORS
 import os
 import pytz
 from dotenv import load_dotenv
+from sqlalchemy.types import TypeDecorator, DateTime
+
 load_dotenv()
+
+
 app = Flask(__name__)
+
+class TimestampTZ(TypeDecorator):
+    impl = DateTime
+    cache_ok = True
+
+    def process_bind_param(self, value, dialect):
+        if value is None:
+            value = datetime.datetime.now(MALAYSIA_TZ)
+        return value.astimezone(pytz.UTC)
+
+    def process_result_value(self, value, dialect):
+        if value is not None:
+            return value.replace(tzinfo=pytz.UTC).astimezone(MALAYSIA_TZ)
+        return value
+    
 MALAYSIA_TZ = pytz.timezone('Asia/Kuala_Lumpur')
 # Database configuration
 database_url = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sensor_data.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
+
 # Database model
 class SensorData(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.DateTime, default=lambda: datetime.datetime.now(MALAYSIA_TZ))
+    timestamp = db.Column(TimestampTZ, default=lambda: datetime.datetime.now(MALAYSIA_TZ))
     temperature = db.Column(db.Float, nullable=False)
     humidity = db.Column(db.Float, nullable=False)
     soil_moisture = db.Column(db.Float, nullable=False)
@@ -43,10 +62,6 @@ def receive_data():
             is_abnormal = True
         if data['soil_moisture'] < 5 or data['soil_moisture'] > 95:
             is_abnormal = True
-
-        # Write to CSV
-        with open('sensor_data.csv', 'a') as file:
-            file.write(f"{timestamp},{data['temperature']},{data['humidity']},{data['soil_moisture']},{is_abnormal}\n")
         
         # Write to Database
         new_entry = SensorData(
