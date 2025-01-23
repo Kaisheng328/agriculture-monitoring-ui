@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import datetime
 from flask_socketio import SocketIO
@@ -10,8 +10,10 @@ from sqlalchemy.types import TypeDecorator, DateTime
 
 load_dotenv()
 
-
 app = Flask(__name__)
+
+# Timezone configuration
+MALAYSIA_TZ = pytz.timezone('Asia/Kuala_Lumpur')
 
 class TimestampTZ(TypeDecorator):
     impl = DateTime
@@ -26,12 +28,17 @@ class TimestampTZ(TypeDecorator):
         if value is not None:
             return value.replace(tzinfo=pytz.UTC).astimezone(MALAYSIA_TZ)
         return value
-    
-MALAYSIA_TZ = pytz.timezone('Asia/Kuala_Lumpur')
+
 # Database configuration
 database_url = os.getenv('DATABASE_URL').replace("postgres://", "postgresql://", 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'connect_args': {
+        'options': '-c timezone=Asia/Kuala_Lumpur'
+    }
+}
+
 db = SQLAlchemy(app)
 socketio = SocketIO(app)
 
@@ -48,24 +55,22 @@ class SensorData(db.Model):
 with app.app_context():
     db.create_all()
 
-
 @app.route('/sensor-data', methods=['POST'])
 def receive_data():
     data = request.json
     if data:
-        timestamp = datetime.datetime.now(MALAYSIA_TZ).strftime('%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.datetime.now(MALAYSIA_TZ)
+        
         # Check for abnormalities
-        is_abnormal = False
-        if data['temperature'] < 20 or data['temperature'] > 50:
-            is_abnormal = True
-        if data['humidity'] < 30 or data['humidity'] > 90:
-            is_abnormal = True
-        if data['soil_moisture'] < 5 or data['soil_moisture'] > 95:
-            is_abnormal = True
+        is_abnormal = (
+            data['temperature'] < 20 or data['temperature'] > 50 or
+            data['humidity'] < 30 or data['humidity'] > 90 or
+            data['soil_moisture'] < 5 or data['soil_moisture'] > 95
+        )
         
         # Write to Database
         new_entry = SensorData(
-            timestamp=datetime.datetime.now(MALAYSIA_TZ),
+            timestamp=timestamp,
             temperature=data['temperature'],
             humidity=data['humidity'],
             soil_moisture=data['soil_moisture'],
@@ -73,13 +78,14 @@ def receive_data():
         )
         db.session.add(new_entry)
         db.session.commit()
+        
         socketio.emit('update', {
             'temperature': data['temperature'],
             'humidity': data['humidity'],
             'soil_moisture': data['soil_moisture'],
             'is_abnormal': is_abnormal
         })
-        # Increment abnormal count if necessary
+        
         if is_abnormal:
             socketio.emit('notification', {
                 'message': 'Abnormal data detected!',
@@ -87,7 +93,7 @@ def receive_data():
                     'temperature': data['temperature'],
                     'humidity': data['humidity'],
                     'soil_moisture': data['soil_moisture'],
-                    'timestamp': timestamp
+                    'timestamp': timestamp.strftime('%Y-%m-%d %H:%M:%S')
                 }
             })
 
@@ -96,7 +102,6 @@ def receive_data():
 
 @app.route('/history', methods=['GET'])
 def get_history():
-    # Fetch data from the database
     records = SensorData.query.order_by(SensorData.timestamp.desc()).all()
     return jsonify([
         {
