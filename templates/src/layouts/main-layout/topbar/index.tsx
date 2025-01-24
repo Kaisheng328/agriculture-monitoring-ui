@@ -39,7 +39,7 @@ const Topbar = ({
 
   const fetchAbnormalCount = async () => {
     try {
-      const response = await fetch('https://python-flask-server-738775168875.asia-southeast1.run.app/abnormal-count', {
+      const response = await fetch('http://localhost:8080/abnormal-count', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });

@@ -29,6 +29,16 @@ const History = () => {
       dataTableRef.current.fetchData(); // Trigger fetchData from DataTable
     }
   };
+  const handleDownloadClick = () => {
+    const downloadUrl = 'https://localhost:8080/download-csv'; // Replace with your /download-csv endpoint
+    const anchor = document.createElement('a');
+    anchor.href = downloadUrl;
+    anchor.download = 'sensor_data.csv';
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
+  };
+  
   return (
     <Paper sx={{ height: { xs: 418, sm: 370 }, overflow: 'hidden' }}>
       <Stack
@@ -60,6 +70,9 @@ const History = () => {
           />
           <Button variant="contained" onClick={handleSyncClick}>
             Sync
+          </Button>
+          <Button variant="contained" color="secondary" onClick={handleDownloadClick}>
+            CSV
           </Button>
         </Stack>
       </Stack>

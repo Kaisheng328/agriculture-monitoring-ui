@@ -11,7 +11,7 @@ const Notification = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('https://python-flask-server-738775168875.asia-southeast1.run.app/abnormal-history', {
+      const response = await fetch('http://localhost:8080/abnormal-history', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });

@@ -7,6 +7,8 @@ import os
 import pytz
 from dotenv import load_dotenv
 from sqlalchemy.types import TypeDecorator, DateTime
+import csv
+from flask import Response
 
 load_dotenv()
 
@@ -123,6 +125,34 @@ def get_abnormal_history():
             "type": get_abnormal_type(record),
         } for record in records
     ])
+
+@app.route('/download-csv', methods=['GET'])
+def download_csv():
+    # Query all data from the SensorData table
+    records = SensorData.query.order_by(SensorData.timestamp.desc()).all()
+    
+    # Create a list of rows to be written to the CSV
+    csv_data = [
+        ["timestamp", "temperature", "humidity", "soil_moisture"]  # CSV headers
+    ]
+    
+    for record in records:
+        csv_data.append([
+            record.timestamp.strftime('%Y-%m-%d %H:%M:%S'),
+            record.temperature,
+            record.humidity,
+            record.soil_moisture
+        ])
+    
+    # Create a CSV response
+    def generate_csv():
+        for row in csv_data:
+            yield ','.join(map(str, row)) + '\n'
+    
+    response = Response(generate_csv(), mimetype='text/csv')
+    response.headers.set("Content-Disposition", "attachment", filename="sensor_data.csv")
+    return response
+
 
 def get_abnormal_type(record):
     if record.temperature < 20 or record.temperature > 50:

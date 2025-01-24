@@ -85,7 +85,7 @@ const DataTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref) => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('https://python-flask-server-738775168875.asia-southeast1.run.app/history', {
+      const response = await fetch('http://localhost:8080/history', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
