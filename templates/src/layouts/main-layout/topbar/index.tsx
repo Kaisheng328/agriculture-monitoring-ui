@@ -39,7 +39,7 @@ const Topbar = ({
 
   const fetchAbnormalCount = async () => {
     try {
-      const response = await fetch('http://localhost:8080/abnormal-count', {
+      const response = await fetch('/proxy/abnormal-count', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });

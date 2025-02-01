@@ -9,10 +9,12 @@ from dotenv import load_dotenv
 from sqlalchemy.types import TypeDecorator, DateTime
 import csv
 from flask import Response
+import requests 
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app) 
 
 # Timezone configuration
 MALAYSIA_TZ = pytz.timezone('Asia/Kuala_Lumpur')
@@ -52,6 +54,29 @@ class SensorData(db.Model):
 with app.app_context():
     db.create_all()
 
+@app.route('/proxy/<path:endpoint>', methods=['GET', 'POST', 'PUT', 'DELETE'])
+def proxy_request(endpoint):
+    """Forwards requests to the actual API, hiding the API URL from frontend."""
+    API_BASE_URL = os.getenv("API_URL")  # Store real API URL in .env
+    if not API_BASE_URL:
+        return jsonify({"error": "API base URL not configured"}), 500
+    
+    # Determine the full API endpoint
+    url = f"{API_BASE_URL}/{endpoint}"
+
+    # Forward request headers, method, and data
+    headers = {key: value for key, value in request.headers if key != 'Host'}
+    response = requests.request(
+        method=request.method,
+        url=url,
+        headers=headers,
+        data=request.data,
+        params=request.args
+    )
+
+    # Return the response from the actual API
+    return Response(response.content, status=response.status_code, content_type=response.headers.get('Content-Type'))
+
 @app.route('/sensor-data', methods=['POST'])
 def receive_data():
     data = request.json
@@ -75,7 +100,7 @@ def receive_data():
         )
         db.session.add(new_entry)
         db.session.commit()
-        
+        db.session.remove()
         socketio.emit('update', {
             'temperature': data['temperature'],
             'humidity': data['humidity'],
@@ -163,11 +188,10 @@ def get_abnormal_type(record):
         return "Soil Moisture"
     return "Unknown"
 
-CORS(app) 
 @socketio.on('connect')
 def handle_connect():
     print("Client connected")
 
 if __name__ == '__main__':
    port = int(os.environ.get("PORT", 8080))
-   app.run(host='0.0.0.0', port=port)
+   socketio.run(app, host='0.0.0.0', port=port)

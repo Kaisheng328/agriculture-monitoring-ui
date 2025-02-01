@@ -30,7 +30,7 @@ const History = () => {
     }
   };
   const handleDownloadClick = () => {
-    const downloadUrl = 'https://localhost:8080/download-csv'; // Replace with your /download-csv endpoint
+    const downloadUrl = '/proxy/download-csv'; // Replace with your /download-csv endpoint
     const anchor = document.createElement('a');
     anchor.href = downloadUrl;
     anchor.download = 'sensor_data.csv';
