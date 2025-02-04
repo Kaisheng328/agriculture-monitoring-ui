@@ -39,7 +39,7 @@ const Topbar = ({
 
   const fetchAbnormalCount = async () => {
     try {
-      const response = await fetch('/proxy/abnormal-count', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-count`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });

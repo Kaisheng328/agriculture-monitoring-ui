@@ -31,7 +31,7 @@ const RealTime = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/proxy/history', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

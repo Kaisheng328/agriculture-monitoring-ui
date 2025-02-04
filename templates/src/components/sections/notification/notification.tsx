@@ -11,7 +11,7 @@ const Notification = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch('/proxy/abnormal-history', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-history`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });

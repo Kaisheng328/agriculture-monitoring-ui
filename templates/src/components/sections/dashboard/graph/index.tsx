@@ -18,7 +18,7 @@ const LineGraph = () => {
   const fetchHistoryData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/proxy/history', {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
       });
