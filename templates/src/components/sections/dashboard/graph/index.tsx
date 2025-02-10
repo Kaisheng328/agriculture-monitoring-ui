@@ -11,7 +11,7 @@ const LineGraph = () => {
     { timestamp: string; temperature: number; humidity: number; soil_moisture: number; is_abnormal: boolean}[]
   >([]);
   const [filteredData, setFilteredData] = useState(historyData);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date(Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate())));
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -36,8 +36,8 @@ const LineGraph = () => {
   useEffect(() => {
     if (selectedDate) {
       const filtered = historyData.filter((item) => {
-        const itemDate = new Date(item.timestamp).toDateString();
-        const selectedDateString = selectedDate.toDateString();
+        const itemDate = new Date(item.timestamp).toLocaleDateString('en-US', { timeZone: 'UTC' });
+        const selectedDateString = selectedDate.toLocaleDateString('en-US', { timeZone: 'UTC' });
         return itemDate === selectedDateString;
       });
       setFilteredData(filtered);
@@ -102,7 +102,7 @@ const LineGraph = () => {
             <MetricGraph
               title="Temperature"
               data={filteredData.map((item) => ({
-                timestamp: item.timestamp,
+                timestamp: new Date(item.timestamp).toLocaleString(),
                 value: item.temperature,
               }))}
               color="#ff7043"
@@ -114,7 +114,7 @@ const LineGraph = () => {
             <MetricGraph
               title="Humidity"
               data={filteredData.map((item) => ({
-                timestamp: item.timestamp,
+                timestamp: new Date(item.timestamp).toLocaleString(),
                 value: item.humidity,
               }))}
               color="#42a5f5"
@@ -126,7 +126,7 @@ const LineGraph = () => {
             <MetricGraph
               title="Soil Moisture"
               data={filteredData.map((item) => ({
-                timestamp: item.timestamp,
+                timestamp: new Date(item.timestamp).toLocaleString(),
                 value: item.soil_moisture,
               }))}
               color="#66bb6a"

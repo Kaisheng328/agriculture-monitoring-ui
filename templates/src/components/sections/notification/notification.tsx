@@ -19,9 +19,10 @@ const Notification = () => {
         throw new Error('Failed to fetch notifications');
       }
       const data = await response.json();
-      setNotifications(data);
+      setNotifications(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error(error);
+      setNotifications([]);
     }
   };
 
@@ -34,16 +35,22 @@ const Notification = () => {
       <Typography variant="h5" gutterBottom>
         Notifications
       </Typography>
+      {notifications.length === 0 ? ( // Check if there are no notifications
+        <Typography variant="body2" color="textSecondary">
+          No notifications available.
+        </Typography>
+      ) : (
       <List>
         {notifications.map((notification, index) => (
           <ListItem key={index} divider>
             <ListItemText
               primary={`Abnormal ${notification.type}`}
-              secondary={`Time: ${notification.timestamp}`}
+              secondary={`Time: ${new Date(notification.timestamp).toLocaleString('en-GB', { timeZone: 'Asia/Kuala_Lumpur' })}`}
             />
           </ListItem>
         ))}
       </List>
+      )}
     </Box>
   );
 };

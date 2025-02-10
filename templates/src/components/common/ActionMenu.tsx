@@ -11,6 +11,7 @@ interface Action {
   id: number;
   icon: string;
   title: string;
+  onClick?: () => void;
 }
 
 interface ActionMenuProps {
@@ -29,10 +30,12 @@ const ActionMenu = ({ actions }: ActionMenuProps) => {
     setAnchorEl(null);
   };
 
-  const handleActionItemClick = () => {
+  const handleActionItemClick = (onClick?: () => void) => {
     handleActionMenuClose();
-  };
-
+    if (onClick) {
+      onClick(); // Execute the action
+    }
+  }
   return (
     <>
       <IconButton onClick={handleActionButtonClick} size="small" sx={{ zIndex: 1000 }}>
@@ -53,18 +56,16 @@ const ActionMenu = ({ actions }: ActionMenuProps) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        {actions.map((actionItem) => {
-          return (
-            <MenuItem key={actionItem.id} onClick={handleActionItemClick}>
-              <ListItemIcon sx={{ mr: 1, fontSize: 'h5.fontSize' }}>
-                <IconifyIcon icon={actionItem.icon} color="text.primary" />
-              </ListItemIcon>
-              <ListItemText>
-                <Typography color="text.primary">{actionItem.title}</Typography>
-              </ListItemText>
-            </MenuItem>
-          );
-        })}
+        {actions.map((actionItem) => (
+          <MenuItem key={actionItem.id} onClick={() => handleActionItemClick(actionItem.onClick)}>
+            <ListItemIcon sx={{ mr: 1, fontSize: 'h5.fontSize' }}>
+              <IconifyIcon icon={actionItem.icon} color="text.primary" />
+            </ListItemIcon>
+            <ListItemText>
+              <Typography color="text.primary">{actionItem.title}</Typography>
+            </ListItemText>
+          </MenuItem>
+        ))}
       </Menu>
     </>
   );

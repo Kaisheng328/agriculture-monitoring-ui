@@ -14,6 +14,7 @@ const SignUp = lazy(() => import('pages/authentication/SignUp'));
 const ResetPassword = lazy(() => import('pages/authentication/ResetPassword'));
 const Error404 = lazy(() => import('pages/errors/Error404'));
 const Notification = lazy(() => import('pages/notification'));
+const Management = lazy(() => import('pages/management'));
 const routes = [
   {
     element: (
@@ -39,6 +40,10 @@ const routes = [
           {
             path: paths.notification, // Add the Notification route
             element: <Notification />,
+          },
+          {
+            path: paths.management, // Add the Notification route
+            element: <Management />,
           },
         ],
       },

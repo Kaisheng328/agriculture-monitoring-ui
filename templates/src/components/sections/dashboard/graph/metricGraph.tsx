@@ -20,7 +20,7 @@ interface MetricGraphProps {
 
 const MetricGraph = ({ title, data, color, sx }: MetricGraphProps) => {
   const option = useMemo(() => {
-    const timestamps = data.map((item) => item.timestamp);
+    const timestamps = data.map((item) => new Date(item.timestamp).toLocaleString('en-GB', { timeZone: 'UTC' }));
     const values = data.map((item) => item.value);
 
     return {

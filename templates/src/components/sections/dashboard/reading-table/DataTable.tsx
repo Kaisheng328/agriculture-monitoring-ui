@@ -26,7 +26,7 @@ const columns: GridColDef[] = [
     flex: 2,
     minWidth: 180,
     renderCell: (params) => (
-      <Typography variant="caption">{new Date(params.value).toLocaleString()}</Typography>
+      <Typography variant="caption">{new Date(params.value).toLocaleString('en-GB', { timeZone: 'UTC' })}</Typography>
     ),
   },
   {
@@ -107,7 +107,7 @@ const DataTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref) => {
   useEffect(() => {
     if (apiRef.current && searchText.trim()) {
       const filteredRows = rows.filter((row) =>
-        new Date(row.timestamp).toLocaleString().includes(searchText.trim())
+        new Date(row.timestamp).toLocaleString('en-GB', { timeZone: 'UTC' }).includes(searchText.trim())
       );
       apiRef.current.setRows(filteredRows);
     } else {

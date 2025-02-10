@@ -14,7 +14,7 @@ export default {
   messages: `/${rootPaths.pageRoot}/messages`,
   notification: `/${rootPaths.pageRoot}/notification`,
   settings: `/${rootPaths.pageRoot}/settings`,
-
+  management: `/${rootPaths.pageRoot}/management`,
   signin: `/${rootPaths.authRoot}/signin`,
   signup: `/${rootPaths.authRoot}/signup`,
   resetPassword: `/${rootPaths.authRoot}/reset-password`,

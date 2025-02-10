@@ -21,7 +21,7 @@ interface CombinedGraphProps {
 
 const CombinedGraph = ({ data, sx }: CombinedGraphProps) => {
   const option = useMemo(() => {
-    const timestamps = data.map((item) => item.timestamp);
+    const timestamps = data.map((item) => new Date(item.timestamp).toLocaleString('en-GB', { timeZone: 'UTC' }));
 
     return {
       tooltip: {

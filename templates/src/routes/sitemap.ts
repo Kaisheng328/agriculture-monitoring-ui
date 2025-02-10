@@ -27,12 +27,13 @@ const sitemap: MenuItem[] = [
     icon: 'solar:widget-bold',
     active: true,
   },
-  // {
-  //   id: 'analytics',
-  //   subheader: 'Analytics',
-  //   path: '#!',
-  //   icon: 'solar:chart-square-bold',
-  // },
+  {
+    id: 'management',
+    subheader: 'Management',
+    path: paths.management,
+    icon: 'solar:chart-square-bold',
+    active: true,
+  },
   // {
   //   id: 'invoice',
   //   subheader: 'Invoice',
