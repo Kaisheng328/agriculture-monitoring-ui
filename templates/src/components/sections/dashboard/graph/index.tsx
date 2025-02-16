@@ -18,10 +18,15 @@ const LineGraph = () => {
   const fetchHistoryData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const token = localStorage.getItem("token"); // Get token from storage
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       setHistoryData(data.reverse());

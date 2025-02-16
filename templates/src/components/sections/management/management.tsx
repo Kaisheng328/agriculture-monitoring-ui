@@ -28,10 +28,14 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
   const fetchData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const token = localStorage.getItem("token"); // Get token from storage
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       setRows(data);
@@ -45,9 +49,13 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
     if (!window.confirm(`Are you sure you want to delete record ID: ${id}?`)) return;
 
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/delete/${id}`, {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json',
+          "Authorization": `Bearer ${token}`
+         },
+        
       });
 
       if (!response.ok) throw new Error(`Failed to delete record ID: ${id}`);

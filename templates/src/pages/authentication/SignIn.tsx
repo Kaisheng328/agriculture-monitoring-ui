@@ -15,24 +15,47 @@ import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import Logo from 'assets/images/Logo.png';
 import paths from 'routes/paths';
-
+import { useNavigate } from 'react-router-dom'
 interface User {
   [key: string]: string;
 }
 
 const SignIn = () => {
-  const [user, setUser] = useState<User>({ email: '', password: '' });
+  const [user, setUser] = useState<User>({ username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(user);
-  };
 
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user), // 🔹 Ensure user state is used here
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid login credentials');
+      }
+
+      const data = await response.json();
+      
+      // Save token to localStorage
+      localStorage.setItem('token', data.token);
+
+      console.log('✅ Login Successful:', data);
+      // Redirect to another page (if needed)
+      navigate('/')
+    } catch (error) {
+      console.error('❌ Login Failed:', error);
+    }
+  };
   return (
     <Stack mx="auto" direction="column" alignItems="center" width={1} maxWidth={450}>
       <ButtonBase LinkComponent={Link} href="/" sx={{ mt: 6 }} disableRipple>
@@ -67,16 +90,16 @@ const SignIn = () => {
 
       <Box component="form" onSubmit={handleSubmit}>
         <TextField
-          id="email"
-          name="email"
-          type="email"
+          id="username"
+          name="username"
+          type="username"
           color="secondary"
-          label="Email Address"
+          label="Username"
           value={user.email}
           onChange={handleInputChange}
           variant="filled"
-          placeholder="mail@example.com"
-          autoComplete="email"
+          placeholder="xxxxxx"
+          autoComplete="username"
           sx={{ mt: 3 }}
           fullWidth
           autoFocus

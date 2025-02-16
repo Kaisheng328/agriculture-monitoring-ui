@@ -15,7 +15,7 @@ import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import Logo from 'assets/images/Logo.png';
 import paths from 'routes/paths';
-
+import { useNavigate } from 'react-router-dom';
 interface User {
   [key: string]: string;
 }
@@ -23,14 +23,34 @@ interface User {
 const SignUp = () => {
   const [user, setUser] = useState<User>({ name: '', email: '', username: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setUser({ ...user, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log(user);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/signup`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(user), // 🔹 Ensure user state is used here
+      });
+
+      if (!response.ok) {
+        throw new Error('Signup failed. Please try again.');
+      }
+
+      const data = await response.json();
+      
+      console.log('✅ Signup Successful:', data);
+      navigate(paths.signin)
+    } catch (error) {
+      console.error('❌ signup Failed:', error);
+    }
   };
 
   return (

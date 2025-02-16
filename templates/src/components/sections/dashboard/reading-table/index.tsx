@@ -30,14 +30,28 @@ const History = () => {
     }
   };
   const handleDownloadClick = () => {
-    const downloadUrl = `${import.meta.env.VITE_API_URL}/download-csv`; // Replace with your /download-csv endpoint
-    const anchor = document.createElement('a');
-    anchor.href = downloadUrl;
-    anchor.download = 'sensor_data.csv';
-    document.body.appendChild(anchor);
-    anchor.click();
-    document.body.removeChild(anchor);
+    const downloadUrl = `${import.meta.env.VITE_API_URL}/download-csv`;
+    const token = localStorage.getItem("token");
+    fetch(downloadUrl, {
+      method: "GET",
+      headers: {
+        "Content-Type": "text/csv",
+        "Authorization": `Bearer ${token}`,
+      },
+    })
+      .then((response) => response.blob())
+      .then((blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "sensor_data.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      })
+      .catch((error) => console.error("Download failed:", error));
   };
+  
   
   return (
     <Paper sx={{ height: { xs: 418, sm: 370 }, overflow: 'hidden' }}>

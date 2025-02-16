@@ -11,10 +11,14 @@ const Notification = () => {
 
   const fetchNotifications = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-history`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-      });
+      const token = localStorage.getItem("token"); // Get token from storage
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-history`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
       if (!response.ok) {
         throw new Error('Failed to fetch notifications');
       }
