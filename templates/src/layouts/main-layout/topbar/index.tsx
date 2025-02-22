@@ -9,7 +9,7 @@ import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
-// import ProfileMenu from './ProfileMenu';
+import ProfileMenu from './ProfileMenu';
 // import LanguageSelect from './LanguageSelect';
 import Logo from 'assets/images/Logo.png';
 import React, { useEffect, useState } from 'react';
@@ -157,7 +157,7 @@ const Topbar = ({
               <IconifyIcon icon="mdi:bell-outline" />
             </Badge>
           </IconButton>
-          {/* <ProfileMenu /> */}
+          <ProfileMenu />
         </Stack>
       </Stack>
     </AppBar>

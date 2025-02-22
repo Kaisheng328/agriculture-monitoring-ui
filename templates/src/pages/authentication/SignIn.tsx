@@ -48,7 +48,7 @@ const SignIn = () => {
       
       // Save token to localStorage
       localStorage.setItem('token', data.token);
-
+      localStorage.setItem('username', user.username);
       console.log('✅ Login Successful:', data);
       // Redirect to another page (if needed)
       navigate('/')

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Menu from '@mui/material/Menu';
 import Stack from '@mui/material/Stack';
@@ -9,50 +10,26 @@ import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import IconifyIcon from 'components/base/IconifyIcon';
-import Profile from 'assets/images/Profile.png';
+
 
 interface MenuItems {
   id: number;
   title: string;
   icon: string;
+  action?: () => void; // Add action for handling clicks
 }
-
-const menuItems: MenuItems[] = [
-  {
-    id: 1,
-    title: 'View Profile',
-    icon: 'mdi:user-circle-outline',
-  },
-  {
-    id: 2,
-    title: 'Account Settings',
-    icon: 'mdi:account-cog-outline',
-  },
-  {
-    id: 3,
-    title: 'Notifications',
-    icon: 'mdi:bell-outline',
-  },
-  {
-    id: 4,
-    title: 'Switch Account',
-    icon: 'mdi:account-box-multiple-outline',
-  },
-  {
-    id: 5,
-    title: 'Help Center',
-    icon: 'mdi:help-circle-outline',
-  },
-  {
-    id: 6,
-    title: 'Logout',
-    icon: 'mdi:logout',
-  },
-];
 
 const ProfileMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+  const [username, setUsername] = useState<string | null>(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Retrieve username from localStorage when the component mounts
+    const storedUsername = localStorage.getItem('username');
+    setUsername(storedUsername);
+  }, []);
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -61,6 +38,28 @@ const ProfileMenu = () => {
   const handleProfileMenuClose = () => {
     setAnchorEl(null);
   };
+
+  const handleLogout = () => {
+    // Clear localStorage and redirect to login page
+    localStorage.removeItem('token');
+    localStorage.removeItem('username');
+    navigate('//'); // Redirect to login page
+    window.location.reload();
+  };
+
+  const menuItems: MenuItems[] = [
+    {
+      id: 1,
+      title: 'Notifications',
+      icon: 'mdi:bell-outline',
+    },
+    {
+      id: 2,
+      title: 'Logout',
+      icon: 'mdi:logout',
+      action: handleLogout, // Assign logout action
+    },
+  ];
 
   return (
     <>
@@ -73,7 +72,6 @@ const ProfileMenu = () => {
         disableRipple
       >
         <Avatar
-          src={Profile}
           sx={{
             height: 44,
             width: 44,
@@ -101,13 +99,10 @@ const ProfileMenu = () => {
       >
         <Box p={1}>
           <MenuItem onClick={handleProfileMenuClose} sx={{ '&:hover': { bgcolor: 'info.main' } }}>
-            <Avatar src={Profile} sx={{ mr: 1, height: 42, width: 42 }} />
+            <Avatar  sx={{ mr: 1, height: 42, width: 42 }} />
             <Stack direction="column">
               <Typography variant="body2" color="text.primary" fontWeight={600}>
-                Easin Arafat
-              </Typography>
-              <Typography variant="caption" color="text.secondary" fontWeight={400}>
-                easin@example.com
+                {username || 'Guest'} {/* Display username or 'Guest' if null */}
               </Typography>
             </Stack>
           </MenuItem>
@@ -116,18 +111,23 @@ const ProfileMenu = () => {
         <Divider sx={{ my: 0 }} />
 
         <Box p={1}>
-          {menuItems.map((item) => {
-            return (
-              <MenuItem key={item.id} onClick={handleProfileMenuClose} sx={{ py: 1 }}>
-                <ListItemIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 'h5.fontSize' }}>
-                  <IconifyIcon icon={item.icon} />
-                </ListItemIcon>
-                <Typography variant="body2" color="text.secondary" fontWeight={500}>
-                  {item.title}
-                </Typography>
-              </MenuItem>
-            );
-          })}
+          {menuItems.map((item) => (
+            <MenuItem
+              key={item.id}
+              onClick={() => {
+                handleProfileMenuClose();
+                if (item.action) item.action(); // Execute the action if available
+              }}
+              sx={{ py: 1 }}
+            >
+              <ListItemIcon sx={{ mr: 1, color: 'text.secondary', fontSize: 'h5.fontSize' }}>
+                <IconifyIcon icon={item.icon} />
+              </ListItemIcon>
+              <Typography variant="body2" color="text.secondary" fontWeight={500}>
+                {item.title}
+              </Typography>
+            </MenuItem>
+          ))}
         </Box>
       </Menu>
     </>
