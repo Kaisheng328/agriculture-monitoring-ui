@@ -16,6 +16,7 @@ const Error404 = lazy(() => import('pages/errors/Error404'));
 const Notification = lazy(() => import('pages/notification'));
 const Management = lazy(() => import('pages/management'));
 const routes = [
+  
   {
     element: (
       <Suspense fallback={<Splash />}>

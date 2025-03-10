@@ -56,8 +56,8 @@ const ActionMenu = ({ actions }: ActionMenuProps) => {
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        {actions.map((actionItem) => (
-          <MenuItem key={actionItem.id} onClick={() => handleActionItemClick(actionItem.onClick)}>
+        {actions.map((actionItem, index) => (
+          <MenuItem key={`${actionItem.id}-${index}`} onClick={() => handleActionItemClick(actionItem.onClick)}>
             <ListItemIcon sx={{ mr: 1, fontSize: 'h5.fontSize' }}>
               <IconifyIcon icon={actionItem.icon} color="text.primary" />
             </ListItemIcon>
