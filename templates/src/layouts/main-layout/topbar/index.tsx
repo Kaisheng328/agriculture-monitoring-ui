@@ -15,7 +15,11 @@ import Logo from 'assets/images/Logo.png';
 import React, { useEffect, useState } from 'react';
 import paths from 'routes/paths';
 import { useNavigate } from 'react-router-dom';
-
+import Avatar from "@mui/material/Avatar";
+import Dialog from "@mui/material/Dialog";
+import PlantSelection from "./PlantSelection";
+import hebeImg from "assets/images/hebeimg.jpeg"; // Example plant images
+import basilImg from "assets/images/Logo.png"; 
 interface TopbarProps {
   expand: boolean;
   mobileOpen: boolean;
@@ -24,7 +28,10 @@ interface TopbarProps {
   drawerWidth: number;
   miniDrawerWidth: number;
 }
-
+const plantImages: Record<string, string> = {
+  "Hebe andersonii": hebeImg,
+  "Basil": basilImg,
+};
 const Topbar = ({
   expand,
   mobileOpen,
@@ -35,6 +42,8 @@ const Topbar = ({
 }: TopbarProps) => {
   const [abnormalCount, setAbnormalCount] = useState(0); // Total abnormal notifications
   const [unseenCount, setUnseenCount] = useState(0); // Badge content for unseen notifications
+  const [openPlantModal, setOpenPlantModal] = useState(false);
+  const [selectedPlant, setSelectedPlant] = useState<string>("Hebe andersonii");
   const navigate = useNavigate();
 
   const fetchAbnormalCount = async () => {
@@ -81,7 +90,13 @@ const Topbar = ({
     setUnseenCount(0); // Reset badge content for unseen notifications
     navigate(paths.notification); // Navigate to the notifications page
   };
-
+  const handlePlantSelect = (plant: string | null) => {
+    if (plant) {
+      setSelectedPlant(plant);
+      localStorage.setItem("selectedPlant", plant); // Store plant in localStorage
+    }
+    setOpenPlantModal(false); // Close the pop-up after selection
+  };
   return (
     <AppBar
       position="fixed"
@@ -147,6 +162,14 @@ const Topbar = ({
         </Stack>
 
         <Stack spacing={{ xs: 1, sm: 2 }} alignItems="center">
+        <IconButton onClick={() => setOpenPlantModal(true)} sx={{ ml: 2 }}>
+          <Avatar src={plantImages[selectedPlant]} sx={{ width: 48, height: 48 }} />
+        </IconButton>
+
+        {/* Plant Selection Pop-up */}
+        <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
+          <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
+        </Dialog>
           {/* <LanguageSelect /> */}
           <IconButton onClick={handleNotificationClick}>
             <Badge

@@ -1,12 +1,10 @@
-
+import { useState, useEffect } from 'react';
 import Link from '@mui/material/Link';
 import List from '@mui/material/List';
 import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import Badge from '@mui/material/Badge';
-
 import ListItem from '@mui/material/ListItem';
-
 import Typography from '@mui/material/Typography';
 import ButtonBase from '@mui/material/ButtonBase';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -14,16 +12,48 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemButton from '@mui/material/ListItemButton';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
-import sitemap from 'routes/sitemap';
+import sitemapData from 'routes/sitemap';
 import Logo from 'assets/images/Logo.png';
-
-
+import { MenuItem } from 'routes/sitemap'; // Import the MenuItem interface
 
 interface DrawerItemsProps {
   expand: boolean;
 }
 
 const DrawerItems = ({ expand }: DrawerItemsProps) => {
+  const [items, setItems] = useState<MenuItem[]>([]);
+
+  useEffect(() => {
+    // Initial setup of menu items based on auth status
+    const isLoggedIn = !!localStorage.getItem('token');
+    updateMenuItems(isLoggedIn);
+
+    // Set up event listener to update menu when auth status changes
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'token') {
+        updateMenuItems(!!e.newValue);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  // Function to update menu items based on auth status
+  const updateMenuItems = (isLoggedIn: boolean) => {
+    // Filter out auth-related items when user is logged in
+    if (isLoggedIn) {
+      setItems(sitemapData.filter(item => 
+        item.id !== 'signin' && item.id !== 'signup'
+      ));
+    } else {
+      setItems([...sitemapData]);
+    }
+  };
+
   return (
     <>
       <Stack
@@ -51,7 +81,7 @@ const DrawerItems = ({ expand }: DrawerItemsProps) => {
       </Stack>
 
       <List component="nav" sx={{ mb: 30, pt: 1.5 }}>
-        {sitemap.map((item) => (
+        {items.map((item: MenuItem) => (
           <ListItem key={item.id} disablePadding>
             <ListItemButton
               LinkComponent={Link}
@@ -126,49 +156,6 @@ const DrawerItems = ({ expand }: DrawerItemsProps) => {
           </ListItem>
         ))}
       </List>
-
-      {/* <Box mt="auto" px={2.35} pb={5}>
-        <Stack
-          position="relative"
-          mt="auto"
-          mb={4}
-          width={1}
-          height="auto"
-          display={expand ? 'block' : 'none'}
-          sx={{ userSelect: 'none' }}
-        >
-          <Image src={DrawerCardImg} height={1} width={1} sx={{ objectFit: 'cover' }} />
-
-          <Stack position="absolute" bottom={24} width={1} px={2} justifyContent="center">
-            <Button variant="contained" fullWidth>
-              Upgrade Now
-            </Button>
-          </Stack>
-        </Stack>
-
-        <Stack
-          spacing={expand ? 1 : 2}
-          direction={expand ? 'row' : 'column'}
-          alignItems="center"
-          justifyContent="space-between"
-        >
-          <Stack component={Link} href="#!" spacing={1.5} alignItems="center">
-            <Image src={Profile} height={50} width={50} sx={{ borderRadius: 3 }} />
-            <Box sx={[expand ? { display: 'block' } : { display: 'none' }]}>
-              <Typography mb={-0.5} variant="body2" color="text.primary" fontWeight={700}>
-                Easin Arafat
-              </Typography>
-              <Typography mt={-0.5} variant="caption" color="text.disabled" fontWeight={400}>
-                Free Account
-              </Typography>
-            </Box>
-          </Stack>
-
-          <IconButton LinkComponent={Link} href="#!">
-            <IconifyIcon icon="majesticons:logout" color="text.disabled" />
-          </IconButton>
-        </Stack>
-      </Box> */}
     </>
   );
 };

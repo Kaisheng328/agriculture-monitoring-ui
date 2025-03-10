@@ -12,9 +12,10 @@
     "deploy": "gh-pages -d dist"
   },
   "dependencies": {
-    "@emotion/react": "^11.11.4",
-    "@emotion/styled": "^11.11.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@mui/material": "^5.15.20",
+    "@mui/styled-engine": "^6.4.6",
     "@mui/x-data-grid": "^7.18.0",
     "@mui/x-date-pickers": "^7.24.0",
     "date-fns": "^4.1.0",

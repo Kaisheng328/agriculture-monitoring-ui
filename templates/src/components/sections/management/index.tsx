@@ -32,7 +32,7 @@ const History = () => {
   };
   
   return (
-    <Paper sx={{ height: { xs: 500, sm: 900 }, overflow: 'hidden' }}>
+    <Paper sx={{ height: 'auto' , overflow: 'hidden' }}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         mt={-0.5}

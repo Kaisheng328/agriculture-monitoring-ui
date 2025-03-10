@@ -81,7 +81,7 @@ const RealTime = () => {
   }
 
   return (
-    <Paper sx={{ px: 0, height: 250 }}>
+    <Paper sx={{ px: 0, height: 'auto' }}>
       <Stack mt={-0.5} px={3.75} alignItems="center" justifyContent="space-between">
         <Typography variant="h6" color="text.secondary" zIndex={1000}>
           Real-Time Data

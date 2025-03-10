@@ -26,10 +26,10 @@ const Item = styled(Paper)(({ theme }) => ({
 const RealTimeData = ({ data}: RealTimeDataProps) => {
 
   return (
-    <Box sx={{ flexGrow: 1, padding: 4 }}>
+    <Box sx={{ p:4 }}>
     <Grid container spacing={15}>
       {/* Temperature Box */}
-      <Grid item xs={12} sm={4}>
+      <Grid item xs={12} md={4}>
         <Item>
           <Typography variant="h6" color="text.secondary">
             Temperature
@@ -41,7 +41,7 @@ const RealTimeData = ({ data}: RealTimeDataProps) => {
       </Grid>
 
       {/* Humidity Box */}
-      <Grid item xs={12} sm={4}>
+      <Grid item xs={12} md={4}>
         <Item>
           <Typography variant="h6" color="text.secondary">
             Humidity
@@ -53,7 +53,7 @@ const RealTimeData = ({ data}: RealTimeDataProps) => {
       </Grid>
 
       {/* Soil Moisture Box */}
-      <Grid item xs={12} sm={4}>
+      <Grid item xs={12} md={4}>
         <Item>
           <Typography variant="h6" color="text.secondary">
             Soil Moisture
@@ -71,7 +71,7 @@ const RealTimeData = ({ data}: RealTimeDataProps) => {
       display="block"
       textAlign="center"
       color="text.secondary"
-      sx={{ mt: 6 }}
+      sx={{ mt: 'auto' }}
     >
      Last Updated: {new Date(data.timestamp).toLocaleString('en-GB', { timeZone: 'UTC' })}
     </Typography>

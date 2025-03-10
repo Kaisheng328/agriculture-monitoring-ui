@@ -23,12 +23,16 @@ const ProfileMenu = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const [username, setUsername] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Retrieve username from localStorage when the component mounts
+    // Retrieve username and token from localStorage when the component mounts
     const storedUsername = localStorage.getItem('username');
+    const storedToken = localStorage.getItem('token');
+    
     setUsername(storedUsername);
+    setIsLoggedIn(!!storedToken); // Convert to boolean (true if token exists)
   }, []);
 
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -43,23 +47,45 @@ const ProfileMenu = () => {
     // Clear localStorage and redirect to login page
     localStorage.removeItem('token');
     localStorage.removeItem('username');
+    setIsLoggedIn(false);
+    setUsername(null);
     navigate('//'); // Redirect to login page
     window.location.reload();
   };
+  
+  const handleLogin = () => {
+    navigate('/auth/signin'); // Redirect to login page
+  };
 
-  const menuItems: MenuItems[] = [
-    {
-      id: 1,
-      title: 'Notifications',
-      icon: 'mdi:bell-outline',
-    },
-    {
-      id: 2,
-      title: 'Logout',
-      icon: 'mdi:logout',
-      action: handleLogout, // Assign logout action
-    },
-  ];
+  // Base menu items that are always shown
+  const getMenuItems = (): MenuItems[] => {
+    const items: MenuItems[] = [
+      {
+        id: 1,
+        title: 'Notifications',
+        icon: 'mdi:bell-outline',
+      }
+    ];
+
+    // Conditionally add login or logout based on authentication status
+    if (isLoggedIn) {
+      items.push({
+        id: 3,
+        title: 'Logout',
+        icon: 'mdi:logout',
+        action: handleLogout
+      });
+    } else {
+      items.push({
+        id: 2,
+        title: 'Login',
+        icon: 'mdi:login',
+        action: handleLogin
+      });
+    }
+
+    return items;
+  };
 
   return (
     <>
@@ -99,7 +125,7 @@ const ProfileMenu = () => {
       >
         <Box p={1}>
           <MenuItem onClick={handleProfileMenuClose} sx={{ '&:hover': { bgcolor: 'info.main' } }}>
-            <Avatar  sx={{ mr: 1, height: 42, width: 42 }} />
+            <Avatar sx={{ mr: 1, height: 42, width: 42 }} />
             <Stack direction="column">
               <Typography variant="body2" color="text.primary" fontWeight={600}>
                 {username || 'Guest'} {/* Display username or 'Guest' if null */}
@@ -111,7 +137,7 @@ const ProfileMenu = () => {
         <Divider sx={{ my: 0 }} />
 
         <Box p={1}>
-          {menuItems.map((item) => (
+          {getMenuItems().map((item) => (
             <MenuItem
               key={item.id}
               onClick={() => {

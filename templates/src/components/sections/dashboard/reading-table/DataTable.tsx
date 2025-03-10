@@ -58,7 +58,7 @@ const columns: GridColDef[] = [
     minWidth: 120,
     renderCell: (params) => (
       <Typography variant="caption">
-        {formatNumber(params.value, { maximumFractionDigits: 1 })}
+        {formatNumber(params.value, { maximumFractionDigits: 2 })}
       </Typography>
     ),
   },
