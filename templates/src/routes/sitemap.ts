@@ -66,6 +66,13 @@ const sitemap: MenuItem[] = [
     icon: 'solar:bell-bold',
     active: true
   },
+  {
+    id: 'guideline',
+    subheader: 'Guideline',
+    path: paths.guideline,
+    icon: 'solar:signpost-2-bold',
+    active: true
+  },
   // {
   //   id: 'settings',
   //   subheader: 'Settings',
