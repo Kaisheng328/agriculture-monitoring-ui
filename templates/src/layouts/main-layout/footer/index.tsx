@@ -13,9 +13,9 @@ const Footer = () => {
       letterSpacing={0.5}
       fontWeight={500}
     >
-      Made with ❤️ by{' '}
-      <Link href="https://themewagon.com/" target="_blank" rel="noreferrer" fontWeight={600}>
-        {'ThemeWagon'}
+      Copyright Reserved by{''}
+      <Link href="https://github.com/Kaisheng328/agriculture-monitoring-ui" target="_blank" rel="noreferrer" fontWeight={600}>
+        {'Kaisheng'}
       </Link>
     </Typography>
   );
