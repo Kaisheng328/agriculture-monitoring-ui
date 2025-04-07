@@ -10,7 +10,6 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import ProfileMenu from './ProfileMenu';
-// import LanguageSelect from './LanguageSelect';
 import Logo from 'assets/images/Logo.png';
 import React, { useEffect, useState } from 'react';
 import paths from 'routes/paths';
@@ -18,8 +17,10 @@ import { useNavigate } from 'react-router-dom';
 import Avatar from "@mui/material/Avatar";
 import Dialog from "@mui/material/Dialog";
 import PlantSelection from "./PlantSelection";
-import hebeImg from "assets/images/hebeimg.jpeg"; // Example plant images
-import basilImg from "assets/images/Logo.png"; 
+import hebeImg from "assets/images/hebeimg.jpeg";
+import basilImg from "assets/images/Logo.png";
+import Chip from "@mui/material/Chip";
+
 interface TopbarProps {
   expand: boolean;
   mobileOpen: boolean;
@@ -28,10 +29,12 @@ interface TopbarProps {
   drawerWidth: number;
   miniDrawerWidth: number;
 }
+
 const plantImages: Record<string, string> = {
   "Hebe andersonii": hebeImg,
   "Basil": basilImg,
 };
+
 const Topbar = ({
   expand,
   mobileOpen,
@@ -40,31 +43,31 @@ const Topbar = ({
   drawerWidth,
   miniDrawerWidth,
 }: TopbarProps) => {
-  const [abnormalCount, setAbnormalCount] = useState(0); // Total abnormal notifications
-  const [unseenCount, setUnseenCount] = useState(0); // Badge content for unseen notifications
+  const [abnormalCount, setAbnormalCount] = useState(0);
+  const [unseenCount, setUnseenCount] = useState(0);
   const [openPlantModal, setOpenPlantModal] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState<string>("Hebe andersonii");
+  const [aiEnabled, setAiEnabled] = useState<boolean>(false); // Add state for AI enabled
   const navigate = useNavigate();
 
   const fetchAbnormalCount = async () => {
     try {
-      const token = localStorage.getItem("token"); // Get token from storage
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-count`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-count`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
       if (!response.ok) {
         throw new Error('Failed to fetch abnormal count');
       }
       const data = await response.json();
       setAbnormalCount(data.count);
 
-      // Update unseen notifications if new ones exist
       setUnseenCount((prevUnseen) => {
-        const newNotifications = data.count - (abnormalCount - prevUnseen); // Calculate new unseen count
+        const newNotifications = data.count - (abnormalCount - prevUnseen);
         return newNotifications >= 0 ? newNotifications : 0;
       });
     } catch (error) {
@@ -73,10 +76,10 @@ const Topbar = ({
   };
 
   useEffect(() => {
-    fetchAbnormalCount(); // Initial fetch
-    const intervalId = setInterval(fetchAbnormalCount, 5000); // Fetch every 5 seconds
+    fetchAbnormalCount();
+    const intervalId = setInterval(fetchAbnormalCount, 5000);
     return () => clearInterval(intervalId);
-  }, [abnormalCount]); // Depend on abnormalCount to keep fetching dynamically
+  }, [abnormalCount]);
 
   const handleDrawerExpand = () => {
     setExpand(!expand);
@@ -87,16 +90,30 @@ const Topbar = ({
   };
 
   const handleNotificationClick = () => {
-    setUnseenCount(0); // Reset badge content for unseen notifications
-    navigate(paths.notification); // Navigate to the notifications page
+    setUnseenCount(0);
+    navigate(paths.notification);
   };
-  const handlePlantSelect = (plant: string | null) => {
+
+  const handlePlantSelect = (plant: string | null, aiEnabled?: boolean) => {
     if (plant) {
       setSelectedPlant(plant);
-      localStorage.setItem("selectedPlant", plant); // Store plant in localStorage
+      localStorage.setItem("selectedPlant", plant);
+      
+      // Set the AI enabled state
+      setAiEnabled(aiEnabled || false);
+      localStorage.setItem("aiEnabled", aiEnabled ? "true" : "false");
     }
-    setOpenPlantModal(false); // Close the pop-up after selection
+    setOpenPlantModal(false);
   };
+
+  // Load AI enabled state on component mount
+  useEffect(() => {
+    const savedAiState = localStorage.getItem("aiEnabled");
+    if (savedAiState) {
+      setAiEnabled(savedAiState === "true");
+    }
+  }, []);
+
   return (
     <AppBar
       position="fixed"
@@ -161,16 +178,26 @@ const Topbar = ({
           />
         </Stack>
 
-        <Stack spacing={{ xs: 1, sm: 2 }} alignItems="center">
-        <IconButton onClick={() => setOpenPlantModal(true)} sx={{ ml: 2 }}>
-          <Avatar src={plantImages[selectedPlant]} sx={{ width: 48, height: 48 }} />
-        </IconButton>
+        <Stack spacing={{ xs: 1, sm: 2 }} alignItems="center" direction="row">
+          {/* AI Indicator Chip - shown when AI is enabled */}
+          {aiEnabled && (
+            <Chip
 
-        {/* Plant Selection Pop-up */}
-        <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
-          <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
-        </Dialog>
-          {/* <LanguageSelect /> */}
+              label="AI"
+              color="secondary"
+              size="small"
+              sx={{ mr: 1 }}
+            />
+          )}
+          
+          <IconButton onClick={() => setOpenPlantModal(true)} sx={{ ml: 2 }}>
+            <Avatar src={plantImages[selectedPlant]} sx={{ width: 48, height: 48 }} />
+          </IconButton>
+
+          <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
+            <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
+          </Dialog>
+          
           <IconButton onClick={handleNotificationClick}>
             <Badge
               color="error"

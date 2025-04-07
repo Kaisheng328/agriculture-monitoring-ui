@@ -29,8 +29,28 @@ const PlantSelection = ({ open, onClose }: PlantSelectionProps) => {
     setSelectedPlant(plant);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = async () => {
     if (selectedPlant) {
+      try {
+
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/toggle-ai`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            plant: selectedPlant,
+            enabled: aiEnabled
+          })
+        });
+
+        const data = await res.json();
+        console.log("✅ Plant selection submitted:", data);
+        console.log("Selected Plant:", selectedPlant); 
+      } catch (err) {
+        console.error("❌ Error sending plant selection:", err);
+      }
+
       onClose(selectedPlant, aiEnabled);
     }
   };
@@ -53,11 +73,8 @@ const PlantSelection = ({ open, onClose }: PlantSelectionProps) => {
       open={open} 
       onClose={handleCancel}
       aria-labelledby="plant-selection-dialog-title"
-      // Make sure focus is properly trapped within the dialog
       disableEnforceFocus={false}
-      // Proper focus management
       autoFocus
-      // Ensure accessibility
       aria-modal="true"
       role="dialog"
     >
