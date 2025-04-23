@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import Button from '@mui/material/Button';
+import Paper from '@mui/material/Paper';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -34,12 +35,10 @@ const AdminManagementButtons = () => {
   });
 
   useEffect(() => {
-    // Check if current user is admin
     const checkUserRole = async () => {
       try {
         const token = localStorage.getItem("token");
-        
-        // First get the user ID from profile endpoint
+
         const profileResponse = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
           method: "GET",
           headers: {
@@ -52,28 +51,9 @@ const AdminManagementButtons = () => {
           throw new Error(`HTTP error! Status: ${profileResponse.status}`);
         }
 
-        const userId = await profileResponse.json();
-        
-        // Then get all users to find the current user's role
-        const usersResponse = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
+        const currentUser = await profileResponse.json(); // ⬅️ Updated
+        setIsAdmin(currentUser.role === 'admin');
 
-        if (!usersResponse.ok) {
-          throw new Error(`HTTP error! Status: ${usersResponse.status}`);
-        }
-
-        const allUsers = await usersResponse.json() as User[];
-        
-        // Find the current user and check if they're an admin
-        const currentUser = allUsers.find(user => user.id === userId);
-        if (currentUser) {
-          setIsAdmin(currentUser.role === 'admin');
-        }
       } catch (error) {
         console.error('Error checking admin status:', error);
       }
@@ -81,6 +61,7 @@ const AdminManagementButtons = () => {
 
     checkUserRole();
   }, []);
+
 
   const handlePromoteOpen = async () => {
     try {
@@ -127,7 +108,7 @@ const AdminManagementButtons = () => {
       }
 
       const userData = await response.json() as User[];
-      
+
       // Get the current user's ID
       const profileResponse = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
         method: "GET",
@@ -136,13 +117,13 @@ const AdminManagementButtons = () => {
           "Authorization": `Bearer ${token}`,
         },
       });
-      
+
       if (!profileResponse.ok) {
         throw new Error(`HTTP error! Status: ${profileResponse.status}`);
       }
-      
+
       const currentUserId = await profileResponse.json();
-      
+
       // Filter to only include admins, excluding the current user
       setAdminUsers(userData.filter(user => user.role === 'admin' && user.id !== currentUserId));
       setDemoteOpen(true);
@@ -240,101 +221,106 @@ const AdminManagementButtons = () => {
   if (!isAdmin) return null;
 
   return (
-    <Box mt={2} mb={3}>
-      <Stack direction="row" spacing={2}>
-        <Button 
-          variant="contained" 
-          color="primary" 
-          onClick={handlePromoteOpen}
-        >
-          Promote User to Admin
-        </Button>
-        
-        <Button 
-          variant="contained" 
-          color="secondary" 
-          onClick={handleDemoteOpen}
-        >
-          Demote Admin to User
-        </Button>
-      </Stack>
-
-      {/* Promote Dialog */}
-      <Dialog open={promoteOpen} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Select User to Promote to Admin</DialogTitle>
-        <DialogContent>
-          {regularUsers.length > 0 ? (
-            <List>
-              {regularUsers.map((user) => (
-                <ListItem 
-                  key={user.id} 
-                  divider
-                  onClick={() => promoteUser(user.email)}
-                  sx={{ cursor: 'pointer' }}
-                >
-                  <ListItemText 
-                    primary={user.username || user.email} 
-                    secondary={user.email} 
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>No eligible users found</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Close
+    <Paper sx={{ height: 'auto', overflow: 'hidden' }}>
+      <Typography variant="h6" color="text.secondary">
+        Control Button
+      </Typography>
+      <Box mt={2} mb={3}>
+        <Stack direction="row" spacing={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handlePromoteOpen}
+          >
+            Promote User to Admin
           </Button>
-        </DialogActions>
-      </Dialog>
 
-      {/* Demote Dialog */}
-      <Dialog open={demoteOpen} onClose={handleClose} maxWidth="sm" fullWidth>
-        <DialogTitle>Select Admin to Demote to Regular User</DialogTitle>
-        <DialogContent>
-          {adminUsers.length > 0 ? (
-            <List>
-              {adminUsers.map((user) => (
-                <ListItem 
-                  key={user.id} 
-                  divider
-                  onClick={() => demoteUser(user.email)}
-                  sx={{ cursor: 'pointer' }}
-                >
-                  <ListItemText 
-                    primary={user.username || user.email} 
-                    secondary={user.email} 
-                  />
-                </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>No other admin users found</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClose} color="primary">
-            Close
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={handleDemoteOpen}
+          >
+            Demote Admin to User
           </Button>
-        </DialogActions>
-      </Dialog>
+        </Stack>
 
-      <Snackbar 
-        open={snackbar.open} 
-        autoHideDuration={6000} 
-        onClose={handleSnackbarClose}
-      >
-        <Alert 
-          onClose={handleSnackbarClose} 
-          severity={snackbar.severity}
-          sx={{ width: '100%' }}
+        {/* Promote Dialog */}
+        <Dialog open={promoteOpen} onClose={handleClose} maxWidth="sm" fullWidth>
+          <DialogTitle>Select User to Promote to Admin</DialogTitle>
+          <DialogContent>
+            {regularUsers.length > 0 ? (
+              <List>
+                {regularUsers.map((user) => (
+                  <ListItem
+                    key={user.id}
+                    divider
+                    onClick={() => promoteUser(user.email)}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    <ListItemText
+                      primary={user.username || user.email}
+                      secondary={user.email}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography>No eligible users found</Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Demote Dialog */}
+        <Dialog open={demoteOpen} onClose={handleClose} maxWidth="sm" fullWidth>
+          <DialogTitle>Select Admin to Demote to Regular User</DialogTitle>
+          <DialogContent>
+            {adminUsers.length > 0 ? (
+              <List>
+                {adminUsers.map((user) => (
+                  <ListItem
+                    key={user.id}
+                    divider
+                    onClick={() => demoteUser(user.email)}
+                    sx={{ cursor: 'pointer' }}
+                  >
+                    <ListItemText
+                      primary={user.username || user.email}
+                      secondary={user.email}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Typography>No other admin users found</Typography>
+            )}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose} color="primary">
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleSnackbarClose}
         >
-          {snackbar.message}
-        </Alert>
-      </Snackbar>
-    </Box>
+          <Alert
+            onClose={handleSnackbarClose}
+            severity={snackbar.severity}
+            sx={{ width: '100%' }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
+      </Box>
+    </Paper>
   );
 };
 

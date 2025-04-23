@@ -74,7 +74,7 @@ const DrawerItems = ({ expand }: DrawerItemsProps) => {
           >
             <Image src={Logo} alt="logo" height={44} width={44} />
             <Typography variant="h4" letterSpacing={1} fontWeight={600}>
-              GoMonitor
+              GoMon
             </Typography>
           </Stack>
         </ButtonBase>

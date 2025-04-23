@@ -1,19 +1,24 @@
 
-import { Box, Typography } from '@mui/material';
+import { Box, Typography, Grid } from '@mui/material';
 import Management from 'components/sections/management/index';
-import AdminPromotionButton from './custombutton'; 
+import AdminPromotionButton from './custombutton';
 
 const ManagementPage = () => {
   return (
     <Box p={3}>
-      <Typography variant="h5" gutterBottom>
-        Management
-      </Typography>
-      <AdminPromotionButton />
-      <div>
-        <Management />
-      </div>
+      <Grid container px={1.75} spacing={2.75}>
+        <Typography variant="h5" gutterBottom>
+          Management
+        </Typography>
+        <Grid item xs={12}>
+          <AdminPromotionButton />
+        </Grid>
+        <Grid item xs={12}>
+          <Management />
+        </Grid>
+      </Grid>    
     </Box>
+
   );
 };
 

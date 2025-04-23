@@ -1,4 +1,4 @@
-import { useRef, useState, ChangeEvent } from 'react';
+import { useEffect, useRef, useState, ChangeEvent } from 'react';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Paper from '@mui/material/Paper';
@@ -8,13 +8,24 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import ManagementTable from './management';
 import Button from '@mui/material/Button';
+import CircularProgress from '@mui/material/CircularProgress';
 
 interface DataTableRef {
   fetchData: () => void;
 }
+
+interface User {
+  id: number;
+  username: string;
+  role: string;
+}
+
 const History = () => {
   const [searchText, setSearchText] = useState('');
   const dataTableRef = useRef<DataTableRef | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchText(e.target.value);
@@ -22,17 +33,65 @@ const History = () => {
 
   const handleFetchData = () => {
     if (dataTableRef.current) {
-      dataTableRef.current.fetchData(); // Trigger fetchData from DataTable
+      dataTableRef.current.fetchData();
     }
   };
+
   const handleSyncClick = () => {
     if (dataTableRef.current) {
-      dataTableRef.current.fetchData(); // Trigger fetchData from DataTable
+      dataTableRef.current.fetchData();
     }
   };
-  
+
+  // Fetch role + users if admin
+  useEffect(() => {
+    const fetchRoleAndUsers = async () => {
+      try {
+        const token = localStorage.getItem("token");
+
+        const profileRes = await fetch(`${import.meta.env.VITE_API_URL}/profile`, {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
+
+        const profile = await profileRes.json();
+        localStorage.setItem("user_role", profile.role);
+        setIsAdmin(profile.role === 'admin');
+
+        if (profile.role === 'admin') {
+          const usersRes = await fetch(`${import.meta.env.VITE_API_URL}/users`, {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          });
+
+          const usersData = await usersRes.json();
+          setUsers(usersData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch profile or users:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchRoleAndUsers();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" height="300px">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Paper sx={{ height: 'auto' , overflow: 'hidden' }}>
+    <Paper sx={{ height: 'auto', overflow: 'hidden' }}>
+    <Box sx={{ px: 'auto' }}>
       <Stack
         direction={{ xs: 'column', sm: 'row' }}
         mt={-0.5}
@@ -66,9 +125,32 @@ const History = () => {
         </Stack>
       </Stack>
 
-      <Box mt={{ xs: 1.5, sm: 0.75 }} height={800} flex={1}>
-        <ManagementTable ref={dataTableRef} searchText={searchText} onFetchData={handleFetchData}/>
+      <Box mt={{ xs: 1.5, sm: 0.75 }} flex={1}>
+        {isAdmin ? (
+          users.map((user) => (
+            <Paper key={user.id} variant="outlined" sx={{ p: 2, mb: 4, borderColor: 'black', borderWidth: 5 }}>
+              <Typography variant="subtitle1" sx={{ mb: 2 }}>
+                {`User ${user.id} - ${user.username}`}
+              </Typography>
+              <ManagementTable
+                searchText={searchText}
+                onFetchData={handleFetchData}
+                userId={user.id}
+                title={`User ${user.id}`}
+              />
+            </Paper>
+          ))
+        ) : (
+          <Box height={800}>
+            <ManagementTable
+              ref={dataTableRef}
+              searchText={searchText}
+              onFetchData={handleFetchData}
+            />
+          </Box>
+        )}
       </Box>
+    </Box>
     </Paper>
   );
 };

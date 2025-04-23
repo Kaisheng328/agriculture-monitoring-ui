@@ -15,7 +15,7 @@ import Box from '@mui/material/Box';
 
 interface ManagementData {
   id: number;
-  timestamp: string; 
+  timestamp: string;
   temperature: number;
   humidity: number;
   soil_moisture: number;
@@ -25,9 +25,11 @@ interface ManagementData {
 interface TaskOverviewTableProps {
   searchText: string;
   onFetchData: () => void; // Required
+  userId?: number; // <- NEW optional userId
+  title?: string;  // Optional title for admin view
 }
 
-const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref) => {
+const ManagementTable = forwardRef(({ searchText, userId }: TaskOverviewTableProps, ref) => {
   const apiRef = useGridApiRef<GridApi>();
   const [rows, setRows] = useState<ManagementData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,14 +39,22 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
   const fetchData = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("token"); // Get token from storage
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
+      const token = localStorage.getItem("token");
+      const url = new URL(`${import.meta.env.VITE_API_URL}/history`);
+
+      // Add userId query param if provided (admin view)
+      if (userId) {
+        url.searchParams.append("user_id", userId.toString());
+      }
+
+      const response = await fetch(url.toString(), {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${token}`,
         },
       });
+
       if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
       const data = await response.json();
       setRows(data);
@@ -55,6 +65,7 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
     }
   };
 
+
   const handleDelete = async (id: number) => {
     if (!window.confirm(`Are you sure you want to delete record ID: ${id}?`)) return;
 
@@ -62,7 +73,7 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
       const token = localStorage.getItem("token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/delete/${id}`, {
         method: 'DELETE',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           "Authorization": `Bearer ${token}`
         },
@@ -92,7 +103,7 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
 
   // Type-safe input change handler for number fields
   const handleNumberInputChange = (
-    field: 'temperature' | 'humidity' | 'soil_moisture', 
+    field: 'temperature' | 'humidity' | 'soil_moisture',
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     if (editData) {
@@ -106,12 +117,12 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
 
   const handleSaveChanges = async () => {
     if (!editData) return;
-    
+
     try {
       const token = localStorage.getItem("token");
       const response = await fetch(`${import.meta.env.VITE_API_URL}/update/${editData.id}`, {
         method: 'PUT',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
           "Authorization": `Bearer ${token}`
         },
@@ -125,12 +136,12 @@ const ManagementTable = forwardRef(({ searchText }: TaskOverviewTableProps, ref)
       if (!response.ok) throw new Error(`Failed to update record ID: ${editData.id}`);
 
       // Update the modified row in the state
-      setRows(prevRows => 
-        prevRows.map(row => 
+      setRows(prevRows =>
+        prevRows.map(row =>
           row.id === editData.id ? editData : row
         )
       );
-      
+
       handleCloseEditDialog();
     } catch (error) {
       console.error('Error updating record:', error);
