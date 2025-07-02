@@ -1,5 +1,6 @@
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button'; // Import Button
 import Badge from '@mui/material/Badge';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -10,6 +11,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import ProfileMenu from './ProfileMenu';
+import { useViewMode } from 'contexts/ViewModeContext'; // Import useViewMode
 import Logo from 'assets/images/Logo.png';
 import React, { useEffect, useState } from 'react';
 import paths from 'routes/paths';
@@ -49,6 +51,7 @@ const Topbar = ({
   const [selectedPlant, setSelectedPlant] = useState<string>("Hebe andersonii");
   const [aiEnabled, setAiEnabled] = useState<boolean>(false); // Add state for AI enabled
   const navigate = useNavigate();
+  const { isDeveloperMode, toggleViewMode } = useViewMode(); // Consume context
 
   const fetchAbnormalCount = async () => {
     try {
@@ -197,6 +200,15 @@ const Topbar = ({
           <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
             <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
           </Dialog>
+
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={toggleViewMode}
+            sx={{ mr: 1, minWidth: '120px' }}
+          >
+            {isDeveloperMode ? "Developer View" : "User View"}
+          </Button>
           
           <IconButton onClick={handleNotificationClick}>
             <Badge
