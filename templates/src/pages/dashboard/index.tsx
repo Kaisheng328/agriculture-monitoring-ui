@@ -2,8 +2,12 @@ import Grid from '@mui/material/Grid';
 import History from 'components/sections/dashboard/reading-table';
 import RealTime from 'components/sections/dashboard/live';
 import Graph from 'components/sections/dashboard/graph';
-import Map from 'components/sections/dashboard/location'
+import Map from 'components/sections/dashboard/location';
+import { useViewMode } from 'contexts/ViewModeContext';
+
 const Dashboard = () => {
+  const { isDeveloperMode } = useViewMode();
+
   return (
     <Grid container px={3.75} spacing={3.75}>
       <Grid item xs={12}>
@@ -12,12 +16,16 @@ const Dashboard = () => {
       <Grid item xs={12}>
         <Map />
       </Grid>
-      <Grid item xs={12}>
-        <History />
-      </Grid>
-      <Grid item xs={12}>
-        <Graph />
-      </Grid>
+      {isDeveloperMode && (
+        <>
+          <Grid item xs={12}>
+            <History />
+          </Grid>
+          <Grid item xs={12}>
+            <Graph />
+          </Grid>
+        </>
+      )}
     </Grid>
   );
 };

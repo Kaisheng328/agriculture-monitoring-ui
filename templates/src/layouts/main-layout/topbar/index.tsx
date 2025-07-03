@@ -1,5 +1,6 @@
 import Link from '@mui/material/Link';
 import Stack from '@mui/material/Stack';
+import Button from '@mui/material/Button'; // Import Button
 import Badge from '@mui/material/Badge';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -10,16 +11,23 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import ProfileMenu from './ProfileMenu';
+import { useViewMode } from 'contexts/ViewModeContext'; // Import useViewMode
 import Logo from 'assets/images/Logo.png';
 import React, { useEffect, useState } from 'react';
 import paths from 'routes/paths';
 import { useNavigate } from 'react-router-dom';
 import Avatar from "@mui/material/Avatar";
-import Dialog from "@mui/material/Dialog";
 import PlantSelection from "./PlantSelection";
 import hebeImg from "assets/images/hebeimg.jpeg";
 import basilImg from "assets/images/Logo.png";
 import Chip from "@mui/material/Chip";
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  DialogContentText,
+} from "@mui/material";
 
 interface TopbarProps {
   expand: boolean;
@@ -49,6 +57,9 @@ const Topbar = ({
   const [selectedPlant, setSelectedPlant] = useState<string>("Hebe andersonii");
   const [aiEnabled, setAiEnabled] = useState<boolean>(false); // Add state for AI enabled
   const navigate = useNavigate();
+  const { isDeveloperMode, toggleViewMode } = useViewMode(); // Consume context
+  const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
+  const [confirmationDialogContent, setConfirmationDialogContent] = useState({ title: "", message: "", onConfirm: () => { } });
 
   const fetchAbnormalCount = async () => {
     try {
@@ -98,7 +109,7 @@ const Topbar = ({
     if (plant) {
       setSelectedPlant(plant);
       localStorage.setItem("selectedPlant", plant);
-      
+
       // Set the AI enabled state
       setAiEnabled(aiEnabled || false);
       localStorage.setItem("aiEnabled", aiEnabled ? "true" : "false");
@@ -113,6 +124,86 @@ const Topbar = ({
       setAiEnabled(savedAiState === "true");
     }
   }, []);
+
+  const handleToggleDeveloperMode = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("Authentication token not found.");
+      // Handle missing token, e.g., redirect to login
+      return;
+    }
+
+    if (!isDeveloperMode) {
+      // Switching to Developer View
+      setConfirmationDialogContent({
+        title: "Enable Developer Mode?",
+        message: "This will trigger the ESP32 into developer mode for data collection. Do you want to continue?",
+        onConfirm: async () => {
+          try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/device-config/esp32-001/trigger-dev`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error('Failed to trigger developer mode.');
+            }
+            const disableAIRes = await fetch(`${import.meta.env.VITE_API_URL}/toggle-ai`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                enabled: false,
+              }),
+            });
+
+            if (!disableAIRes.ok) {
+              console.warn("AI could not be disabled automatically.");
+            } else {
+              console.log("AI disabled automatically when Developer Mode enabled.");
+            }
+            toggleViewMode(); // Actual toggle after successful API call
+            console.log("Developer mode triggered");
+          } catch (error) {
+            console.error("Error triggering developer mode:", error);
+            // Optionally, show an error message to the user
+          }
+          setConfirmationDialogOpen(false);
+        },
+      });
+    } else {
+      // Switching to User View
+      setConfirmationDialogContent({
+        title: "Disable Developer Mode?",
+        message: "This will stop developer mode data collection on the ESP32. Do you want to continue?",
+        onConfirm: async () => {
+          try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/device-config/esp32-001/stop-dev`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+              },
+            });
+            if (!response.ok) {
+              throw new Error('Failed to stop developer mode.');
+            }
+            toggleViewMode(); // Actual toggle after successful API call
+            console.log("Developer mode stopped");
+          } catch (error) {
+            console.error("Error stopping developer mode:", error);
+            // Optionally, show an error message to the user
+          }
+          setConfirmationDialogOpen(false);
+        },
+      });
+    }
+    setConfirmationDialogOpen(true);
+  };
 
   return (
     <AppBar
@@ -189,7 +280,7 @@ const Topbar = ({
               sx={{ mr: 1 }}
             />
           )}
-          
+
           <IconButton onClick={() => setOpenPlantModal(true)} sx={{ ml: 2 }}>
             <Avatar src={plantImages[selectedPlant]} sx={{ width: 48, height: 48 }} />
           </IconButton>
@@ -197,7 +288,41 @@ const Topbar = ({
           <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
             <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
           </Dialog>
-          
+
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={handleToggleDeveloperMode} // Updated onClick handler
+            sx={{ mr: 1, minWidth: '120px' }}
+          >
+            {isDeveloperMode ? "Developer View" : "User View"}
+          </Button>
+
+          {/* Confirmation Dialog */}
+          <Dialog
+            open={confirmationDialogOpen}
+            onClose={() => setConfirmationDialogOpen(false)}
+            aria-labelledby="alert-dialog-title"
+            aria-describedby="alert-dialog-description"
+          >
+            <DialogTitle id="alert-dialog-title">{confirmationDialogContent.title}</DialogTitle>
+            <DialogContent>
+              <DialogContentText id="alert-dialog-description">
+                {confirmationDialogContent.message}
+              </DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setConfirmationDialogOpen(false)} color="primary">
+                Cancel
+              </Button>
+              <Button onClick={() => {
+                confirmationDialogContent.onConfirm();
+              }} color="primary" autoFocus>
+                Confirm
+              </Button>
+            </DialogActions>
+          </Dialog>
+
           <IconButton onClick={handleNotificationClick}>
             <Badge
               color="error"
