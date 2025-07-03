@@ -1,4 +1,4 @@
-import  { createContext, useState, useContext, ReactNode } from 'react';
+import { createContext, useState, useContext, ReactNode, useEffect } from 'react';
 
 interface ViewModeContextType {
   isDeveloperMode: boolean;
@@ -8,10 +8,17 @@ interface ViewModeContextType {
 const ViewModeContext = createContext<ViewModeContextType | undefined>(undefined);
 
 export const ViewModeProvider = ({ children }: { children: ReactNode }) => {
-  const [isDeveloperMode, setIsDeveloperMode] = useState(false); // Default to User View
+  const [isDeveloperMode, setIsDeveloperMode] = useState(() => {
+    const storedMode = localStorage.getItem('isDeveloperMode');
+    return storedMode ? JSON.parse(storedMode) : false; // Default to User View
+  });
+
+  useEffect(() => {
+    localStorage.setItem('isDeveloperMode', JSON.stringify(isDeveloperMode));
+  }, [isDeveloperMode]);
 
   const toggleViewMode = () => {
-    setIsDeveloperMode(prevMode => !prevMode);
+    setIsDeveloperMode((prevMode: boolean) => !prevMode);
   };
 
   return (
