@@ -26,68 +26,110 @@ const actions = [
 const RealTime = () => {
   const [realTimeData, setRealTimeData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null); // Added type for error state
 
+  // Fetch initial historical data
   useEffect(() => {
-    // Replace with your actual WebSocket server URL
-    // You might want to use an environment variable, e.g., import.meta.env.VITE_WS_URL
-    const wsUrl = "ws://localhost:8080/ws"; 
+    const fetchHistory = async () => {
+      try {
+        const token = localStorage.getItem("token"); // Get token from storage
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`,
+          },
+        });
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const historyData = await response.json();
+
+        if (historyData && historyData.length > 0) {
+          setRealTimeData(historyData[0]);
+        }
+
+      } catch (error) {
+        console.error('Error fetching history data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []); // Empty dependency array: runs only on mount
+
+  // WebSocket connection
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const wsUrl = `${import.meta.env.VITE_API_WS_URL}?token=${token}`;
     const socket = new WebSocket(wsUrl);
 
     socket.onopen = () => {
       console.log("WebSocket connection established");
-      setLoading(false); // Set loading to false once connection is open
-                       // Or, you might want to set it to false after the first message
+
+      setLoading(false);
+      setError(null);
     };
 
     socket.onmessage = (event) => {
       console.log("WebSocket message received:", event.data);
       try {
-        const messageData = JSON.parse(event.data);
-        // Assuming the server sends the data object directly
-        // If it's nested, you'll need to adjust e.g., messageData.payload
+        const raw = JSON.parse(event.data);
+
+        // If it's a notification (with a `data` field), use the actual sensor data inside
+        const messageData = raw.data ? raw.data : raw;
+
+        // Now we have a clean SensorData object regardless of wrapping
         setRealTimeData(messageData);
-        setError(null); // Clear any previous errors on successful message
+        setError(null);
       } catch (e) {
         console.error("Error parsing WebSocket message:", e);
       }
     };
 
+
     socket.onerror = (err) => {
       console.error("WebSocket error:", err);
-      setLoading(false);
+      setError("WebSocket connection error. Please try refreshing.");
+      setLoading(false); // Stop loading on error
     };
 
     socket.onclose = (event) => {
       console.log("WebSocket connection closed:", event.code, event.reason);
       if (!event.wasClean) {
-        // setError("WebSocket connection closed unexpectedly. Attempting to reconnect...");
-        // You might want to implement reconnection logic here
+        setError("WebSocket connection closed. Attempting to reconnect...");
       }
-      // setLoading(false); // Keep loading false or handle appropriately
+      setLoading(false); 
     };
 
-    // Cleanup on component unmount
     return () => {
       if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
         socket.close(1000, "Component unmounting");
         console.log("WebSocket connection closed on component unmount");
       }
     };
-  }, []); // Empty dependency array ensures this runs only on mount and unmount
+  }, []); // Empty dependency array: runs only on mount and unmount for WebSocket
 
+  // Conditional rendering based on loading, error, and data states
+  let content;
   if (loading) {
-    return (
+    content = (
       <Typography variant="body1" align="center" mt={2}>
-        Connecting to real-time service...
+        Loading initial data and connecting to real-time service...
       </Typography>
     );
-  }
-
-  if (error) {
-    return (
+  } else if (error) {
+    content = (
       <Typography variant="body1" color="error" align="center" mt={2}>
         Error: {error}
+        {realTimeData && <Typography variant="caption" display="block">(showing last known data)</Typography>}
+      </Typography>
+    );
+  } else if (!realTimeData) {
+    content = (
+      <Typography variant="body2" align="center" mt={2}>
+        Waiting for data...
       </Typography>
     );
   }
@@ -101,14 +143,16 @@ const RealTime = () => {
         <ActionMenu actions={actions} />
       </Stack>
 
-      {realTimeData ? (
+      {/* Render RealTimeData if data exists, even if there was an error (to show stale data) */}
+      {realTimeData && (
         <RealTimeData
-          data={realTimeData}
+          data={realTimeData} // data prop expects a single object, not an array
           sx={{ mt: 2, mx: 'auto', width: 'auto', maxWidth: 600 }}
         />
-      ) : (
-        !loading && <Typography variant="body2" align="center" mt={2}>Waiting for data...</Typography>
       )}
+      {/* Display loading/error/waiting messages if no data is available to render */}
+      {!realTimeData && content}
+      {/* If there's an error but we have stale data, the error message is shown above by 'content' variable logic */}
     </Paper>
   );
 };

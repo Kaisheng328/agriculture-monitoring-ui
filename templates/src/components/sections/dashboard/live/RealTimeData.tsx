@@ -73,7 +73,15 @@ const RealTimeData = ({ data}: RealTimeDataProps) => {
       color="text.secondary"
       sx={{ mt: 'auto' }}
     >
-     Last Updated: {new Date(data.timestamp).toLocaleString('en-GB', { timeZone: 'UTC' })}
+    Last Updated: {new Date(data.timestamp).toLocaleString('en-MY', { 
+  timeZone: 'Asia/Kuala_Lumpur',
+  year: 'numeric',
+  month: '2-digit',
+  day: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+  second: '2-digit'
+})}
     </Typography>
   </Box>
   );

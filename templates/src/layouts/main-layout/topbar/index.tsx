@@ -60,37 +60,74 @@ const Topbar = ({
   const { isDeveloperMode, toggleViewMode } = useViewMode(); // Consume context
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
   const [confirmationDialogContent, setConfirmationDialogContent] = useState({ title: "", message: "", onConfirm: () => { } });
+  // const [abnormalCountError, setAbnormalCountError] = useState<string | null>(null); // Optional: to display WS errors
 
-  const fetchAbnormalCount = async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/abnormal-count`, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to fetch abnormal count');
-      }
-      const data = await response.json();
-      setAbnormalCount(data.count);
-
-      setUnseenCount((prevUnseen) => {
-        const newNotifications = data.count - (abnormalCount - prevUnseen);
-        return newNotifications >= 0 ? newNotifications : 0;
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+  // WebSocket for abnormal count
   useEffect(() => {
-    fetchAbnormalCount();
-    const intervalId = setInterval(fetchAbnormalCount, 5000);
-    return () => clearInterval(intervalId);
-  }, [abnormalCount]);
+    const token = localStorage.getItem("token");
+    const wsUrl = `${import.meta.env.VITE_API_WS_URL}?token=${token}`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log("Abnormal count WebSocket connection established");
+      // setAbnormalCountError(null);
+    };
+
+    socket.onmessage = (event) => {
+      console.log("Abnormal count WebSocket message received:", event.data);
+      try {
+        const messageData = JSON.parse(event.data);
+
+        if (typeof messageData.abnormal_count === 'number') {
+          const newAbnormalCount = messageData.abnormal_count;
+
+          // Update unseenCount based on the difference between new and current abnormalCount
+          // 'abnormalCount' state variable holds the value *before* this message's update here.
+          setUnseenCount(prevUnseen => {
+            if (newAbnormalCount > abnormalCount) { 
+              // If the new total is greater, add the difference to unseen
+              return prevUnseen + (newAbnormalCount - abnormalCount);
+            }
+            // Optional: If newAbnormalCount < abnormalCount, some abnormals were resolved.
+            // You might want to decrease prevUnseen, but carefully.
+            // For now, unseen count only increases or stays the same if total decreases/stagnates.
+            // Consider if clicking the notification bell (which sets unseenCount to 0)
+            // is the only way unseenCount should decrease.
+            return prevUnseen;
+          });
+
+          setAbnormalCount(newAbnormalCount); // Update the total abnormal count state
+
+        } else if (messageData.type === "sensor_data" && typeof messageData.is_abnormal === 'boolean') {
+          // Alternative: If the WS sends every sensor reading, and we need to count them.
+          // This would be more complex as Topbar would need to know which device/plant it's for
+          // and potentially maintain a list of all abnormal items to get a "count".
+          // This is NOT implemented here and relies on the `abnormal_count` field above.
+          // console.log("Received individual sensor data, but Topbar expects aggregated abnormal_count.");
+        }
+
+      } catch (e) {
+        console.error("Error parsing abnormal count WebSocket message:", e);
+      }
+    };
+
+    socket.onerror = (err) => {
+      console.error("Abnormal count WebSocket error:", err);
+      // setAbnormalCountError("WebSocket connection error for abnormal counts.");
+    };
+
+    socket.onclose = (event) => {
+      console.log("Abnormal count WebSocket connection closed:", event.code, event.reason);
+      // Potentially implement reconnection logic here
+    };
+
+    return () => {
+      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+        socket.close(1000, "Component unmounting abnormal count WebSocket");
+        console.log("Abnormal count WebSocket closed on component unmount");
+      }
+    };
+  }, []); // Empty dependency array: runs only on mount for WebSocket
 
   const handleDrawerExpand = () => {
     setExpand(!expand);
