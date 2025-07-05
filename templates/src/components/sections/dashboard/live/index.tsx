@@ -29,45 +29,57 @@ const RealTime = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchData = async () => {
+    // Replace with your actual WebSocket server URL
+    // You might want to use an environment variable, e.g., import.meta.env.VITE_WS_URL
+    const wsUrl = "ws://localhost:8080/ws"; 
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log("WebSocket connection established");
+      setLoading(false); // Set loading to false once connection is open
+                       // Or, you might want to set it to false after the first message
+    };
+
+    socket.onmessage = (event) => {
+      console.log("WebSocket message received:", event.data);
       try {
-        const token = localStorage.getItem("token"); // Get token from storage
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/history`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-
-        const historyData = await response.json();
-        if (historyData && historyData.length > 0) {
-          const newestData = historyData.reduce((latest: typeof historyData[0], current: typeof historyData[0]) => {
-            return new Date(current.timestamp) > new Date(latest.timestamp) ? current : latest;
-          }, historyData[0]);
-        
-          setRealTimeData(newestData);
-        } else {
-          throw new Error('No data found in history response.');
-        }
-      } catch (err) {
-        setError(error)
-      } finally {
-        setLoading(false);
+        const messageData = JSON.parse(event.data);
+        // Assuming the server sends the data object directly
+        // If it's nested, you'll need to adjust e.g., messageData.payload
+        setRealTimeData(messageData);
+        setError(null); // Clear any previous errors on successful message
+      } catch (e) {
+        console.error("Error parsing WebSocket message:", e);
       }
     };
-    const intervalId = setInterval(fetchData, 5000);
-    return () => clearInterval(intervalId);
-  }, []);
+
+    socket.onerror = (err) => {
+      console.error("WebSocket error:", err);
+      setLoading(false);
+    };
+
+    socket.onclose = (event) => {
+      console.log("WebSocket connection closed:", event.code, event.reason);
+      if (!event.wasClean) {
+        // setError("WebSocket connection closed unexpectedly. Attempting to reconnect...");
+        // You might want to implement reconnection logic here
+      }
+      // setLoading(false); // Keep loading false or handle appropriately
+    };
+
+    // Cleanup on component unmount
+    return () => {
+      if (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING) {
+        socket.close(1000, "Component unmounting");
+        console.log("WebSocket connection closed on component unmount");
+      }
+    };
+  }, []); // Empty dependency array ensures this runs only on mount and unmount
 
   if (loading) {
     return (
       <Typography variant="body1" align="center" mt={2}>
-        Loading real-time data...
+        Connecting to real-time service...
       </Typography>
     );
   }
@@ -82,19 +94,20 @@ const RealTime = () => {
 
   return (
     <Paper sx={{ px: 0, height: 'auto' }}>
-      <Stack mt={-0.5} px={3.75} alignItems="center" justifyContent="space-between">
+      <Stack mt={-0.5} px={3.75} alignItems="center" justifyContent="space-between" direction="row">
         <Typography variant="h6" color="text.secondary" zIndex={1000}>
           Real-Time Data
         </Typography>
-
         <ActionMenu actions={actions} />
       </Stack>
 
-      {realTimeData && (
+      {realTimeData ? (
         <RealTimeData
           data={realTimeData}
           sx={{ mt: 2, mx: 'auto', width: 'auto', maxWidth: 600 }}
         />
+      ) : (
+        !loading && <Typography variant="body2" align="center" mt={2}>Waiting for data...</Typography>
       )}
     </Paper>
   );
