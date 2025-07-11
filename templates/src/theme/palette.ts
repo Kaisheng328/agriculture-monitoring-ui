@@ -19,6 +19,7 @@ import {
   transparentCyan,
   transparentViolet,
   indigo,
+  darkThemeColors, // Import the dark theme colors
 } from './colors';
 
 declare module '@mui/material/styles' {
@@ -64,7 +65,7 @@ declare module '@mui/material/styles' {
   }
 }
 
-const palette: PaletteOptions = {
+export const lightPalette: PaletteOptions = {
   neutral: {
     light: gray[100],
     main: gray[500],
@@ -139,4 +140,81 @@ const palette: PaletteOptions = {
   },
 };
 
-export default palette;
+export const darkPalette: PaletteOptions = {
+  neutral: {
+    light: darkThemeColors.textDisabled, // Example: using textDisabled for light neutral in dark mode
+    main: darkThemeColors.textSecondary,
+    dark: darkThemeColors.textPrimary,
+    darker: darkThemeColors.onBackground,
+  },
+  primary: {
+    main: darkThemeColors.primary,
+    // You might want to define light/darker shades for primary in dark mode if needed
+  },
+  secondary: {
+    main: darkThemeColors.secondary,
+    // You might want to define light/darker shades for secondary in dark mode if needed
+  },
+  info: {
+    // Adjust info colors for dark mode
+    lighter: darkThemeColors.surface, // Example
+    main: darkThemeColors.onSurface,
+    darker: darkThemeColors.background,
+  },
+  success: {
+    main: green[500], // Assuming green works for both, or define a dark mode green
+  },
+  warning: {
+    main: yellow[500], // Assuming yellow works for both, or define a dark mode yellow
+  },
+  error: {
+    main: darkThemeColors.error,
+  },
+  text: {
+    primary: darkThemeColors.textPrimary,
+    secondary: darkThemeColors.textSecondary,
+    disabled: darkThemeColors.textDisabled,
+  },
+  background: {
+    default: darkThemeColors.background,
+    paper: darkThemeColors.surface,
+  },
+  gradients: { // Define gradients for dark mode if they differ (example, may need adjustment)
+    primary: {
+      main: cyan[300], // Example, adjust as needed
+      state: purple[500],
+    },
+    secondary: {
+      main: violet[100],
+      state: white[100], // This might need adjustment for dark backgrounds
+    },
+  },
+  transparent: { // Adjust transparent colors for dark mode
+    primary: {
+      main: `${darkThemeColors.primary}1a`, // Example: primary with alpha
+      dark: `${darkThemeColors.primary}2b`,
+    },
+    secondary: {
+      lighter: `${darkThemeColors.secondary}0d`,
+      light: `${darkThemeColors.secondary}1a`,
+      main: `${darkThemeColors.secondary}1a`,
+    },
+    info: {
+      main: `${darkThemeColors.onSurface}4d`, // Example: onSurface with alpha
+    },
+    success: {
+      main: `${green[500]}1a`, // Example
+    },
+    warning: {
+      main: `${yellow[500]}1a`, // Example
+      dark: `${yellow[500]}66`,
+    },
+    error: {
+      light: `${darkThemeColors.error}1a`,
+      main: `${darkThemeColors.error}1a`,
+    },
+  },
+};
+
+// Default export can be lightPalette or you might remove it if selection is handled elsewhere
+export default lightPalette;

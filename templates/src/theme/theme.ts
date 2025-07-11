@@ -1,6 +1,6 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme, ThemeOptions } from '@mui/material/styles';
 import type {} from '@mui/x-data-grid/themeAugmentation';
-import palette from './palette';
+import { lightPalette, darkPalette } from './palette'; // Import both palettes
 import typography from './typography';
 import customShadows from './shadows';
 import Stack from './components/layout/Stack';
@@ -34,9 +34,9 @@ import Divider from './components/data-display/Divider';
 import AppBar from './components/navigation/Appbar';
 import Chip from './components/data-display/Chip';
 
-export const theme = createTheme({
+// Base theme configuration (shared between light and dark modes)
+const baseThemeOptions: Omit<ThemeOptions, 'palette'> = {
   typography,
-  palette,
   customShadows,
   breakpoints: {
     values: {
@@ -79,4 +79,19 @@ export const theme = createTheme({
     MuiDataGrid: DataGrid,
     MuiCssBaseline: CssBaseline,
   },
-});
+};
+
+// Function to create a theme based on mode
+export const createAppTheme = (mode: 'light' | 'dark') => {
+  const selectedPalette = mode === 'dark' ? darkPalette : lightPalette;
+  return createTheme({
+    ...baseThemeOptions,
+    palette: {
+      ...selectedPalette,
+      mode: mode, // Set the mode for MUI
+    },
+  });
+};
+
+// Default theme (e.g., light mode)
+export const theme = createAppTheme('light');

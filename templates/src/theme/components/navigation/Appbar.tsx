@@ -6,7 +6,11 @@ const AppBar: Components<Omit<Theme, 'components'>>['MuiAppBar'] = {
     root: ({ theme }) => ({
       padding: 0,
       borderRadius: 0,
-      backgroundColor: theme.palette.transparent.info.main,
+      // backgroundColor: theme.palette.transparent.info.main, // Old background
+      backgroundColor: theme.palette.mode === 'dark' 
+        ? theme.palette.background.paper // Use surface color from darkPalette
+        : theme.palette.transparent.info.main, // Keep original for light mode
+      color: theme.palette.text.primary, // Ensure text color contrasts with new AppBar bg
       backdropFilter: 'blur(10px)',
       transition: theme.transitions.create(['width', 'margin'], {
         easing: theme.transitions.easing.sharp,

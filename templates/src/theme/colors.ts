@@ -88,3 +88,39 @@ export const transparentViolet = {
   500: '#605bff1a',
   700: '#605BFF2B',
 };
+
+// Dark Mode Colors
+export const darkThemeColors = {
+  primary: '#BB86FC', // A common purple for dark themes
+  secondary: '#03DAC6', // A common teal for dark themes
+  background: '#1F1F1F', // Slightly lighter than pure black, common for main backgrounds
+  surface: '#2C2C2C',   // For elements like cards, dialogs, app bars (slightly lighter than background)
+  error: '#CF6679',     // Standard Material dark theme error color
+  onPrimary: '#000000',  // Text/icon color on primary background
+  onSecondary: '#000000',// Text/icon color on secondary background
+  onBackground: '#E0E0E0',// Text/icon color on main background
+  onSurface: '#FFFFFF',  // Text/icon color on surface elements (cards, etc.)
+  onError: '#000000',    // Text/icon color on error background
+  textPrimary: '#F5F5F5', // Main text color, very light gray
+  textSecondary: '#BDBDBD',// Secondary text color, a bit darker gray
+  textDisabled: '#757575', // Disabled text color
+  // Specific overrides for the app:
+  appBar: '#2C2C2C', // AppBar background, same as surface
+  tableHeader: '#333333', // Background for table headers
+  tableRowOdd: '#2C2C2C',  // Surface color for odd rows
+  tableRowEven: '#383838', // Slightly lighter/different shade for even rows for striping
+  // Add more specific color overrides if needed, for example:
+  // darkBlue: {
+  //   500: '#90CAF9', // Lighter blue for dark mode
+  // },
+  // gray: { // You might want to define a full gray scale for dark mode
+  //   100: '#424242',
+  //   200: '#616161',
+  //   // ... and so on
+  // },
+  // violet: {
+  //   100: '#3700B3', // Darker violet for dark mode
+  //   300: '#6200EE',
+  //   500: '#BB86FC',
+  // },
+};

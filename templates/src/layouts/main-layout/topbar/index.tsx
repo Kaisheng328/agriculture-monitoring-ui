@@ -1,6 +1,5 @@
 import Link from '@mui/material/Link';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button'; // Import Button
+import Button from '@mui/material/Button';
 import Badge from '@mui/material/Badge';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
@@ -11,7 +10,8 @@ import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import ProfileMenu from './ProfileMenu';
-import { useViewMode } from 'contexts/ViewModeContext'; // Import useViewMode
+import { useViewMode } from 'contexts/ViewModeContext';
+import { useDarkMode } from 'contexts/DarkModeContext';
 import Logo from 'assets/images/Logo.png';
 import React, { useEffect, useState } from 'react';
 import paths from 'routes/paths';
@@ -27,6 +27,7 @@ import {
   DialogContent,
   DialogActions,
   DialogContentText,
+  Box,
 } from "@mui/material";
 
 interface TopbarProps {
@@ -55,12 +56,16 @@ const Topbar = ({
   const [unseenCount, setUnseenCount] = useState(0);
   const [openPlantModal, setOpenPlantModal] = useState(false);
   const [selectedPlant, setSelectedPlant] = useState<string>("Hebe andersonii");
-  const [aiEnabled, setAiEnabled] = useState<boolean>(false); // Add state for AI enabled
+  const [aiEnabled, setAiEnabled] = useState<boolean>(false);
   const navigate = useNavigate();
-  const { isDeveloperMode, toggleViewMode } = useViewMode(); // Consume context
+  const { isDeveloperMode, toggleViewMode } = useViewMode();
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [confirmationDialogOpen, setConfirmationDialogOpen] = useState(false);
-  const [confirmationDialogContent, setConfirmationDialogContent] = useState({ title: "", message: "", onConfirm: () => { } });
-  // const [abnormalCountError, setAbnormalCountError] = useState<string | null>(null); // Optional: to display WS errors
+  const [confirmationDialogContent, setConfirmationDialogContent] = useState({ 
+    title: "", 
+    message: "", 
+    onConfirm: () => { } 
+  });
 
   // WebSocket for abnormal count
   useEffect(() => {
@@ -70,7 +75,6 @@ const Topbar = ({
 
     socket.onopen = () => {
       console.log("Abnormal count WebSocket connection established");
-      // setAbnormalCountError(null);
     };
 
     socket.onmessage = (event) => {
@@ -81,31 +85,15 @@ const Topbar = ({
         if (typeof messageData.abnormal_count === 'number') {
           const newAbnormalCount = messageData.abnormal_count;
 
-          // Update unseenCount based on the difference between new and current abnormalCount
-          // 'abnormalCount' state variable holds the value *before* this message's update here.
           setUnseenCount(prevUnseen => {
             if (newAbnormalCount > abnormalCount) { 
-              // If the new total is greater, add the difference to unseen
               return prevUnseen + (newAbnormalCount - abnormalCount);
             }
-            // Optional: If newAbnormalCount < abnormalCount, some abnormals were resolved.
-            // You might want to decrease prevUnseen, but carefully.
-            // For now, unseen count only increases or stays the same if total decreases/stagnates.
-            // Consider if clicking the notification bell (which sets unseenCount to 0)
-            // is the only way unseenCount should decrease.
             return prevUnseen;
           });
 
-          setAbnormalCount(newAbnormalCount); // Update the total abnormal count state
-
-        } else if (messageData.type === "sensor_data" && typeof messageData.is_abnormal === 'boolean') {
-          // Alternative: If the WS sends every sensor reading, and we need to count them.
-          // This would be more complex as Topbar would need to know which device/plant it's for
-          // and potentially maintain a list of all abnormal items to get a "count".
-          // This is NOT implemented here and relies on the `abnormal_count` field above.
-          // console.log("Received individual sensor data, but Topbar expects aggregated abnormal_count.");
+          setAbnormalCount(newAbnormalCount);
         }
-
       } catch (e) {
         console.error("Error parsing abnormal count WebSocket message:", e);
       }
@@ -113,12 +101,10 @@ const Topbar = ({
 
     socket.onerror = (err) => {
       console.error("Abnormal count WebSocket error:", err);
-      // setAbnormalCountError("WebSocket connection error for abnormal counts.");
     };
 
     socket.onclose = (event) => {
       console.log("Abnormal count WebSocket connection closed:", event.code, event.reason);
-      // Potentially implement reconnection logic here
     };
 
     return () => {
@@ -127,7 +113,7 @@ const Topbar = ({
         console.log("Abnormal count WebSocket closed on component unmount");
       }
     };
-  }, []); // Empty dependency array: runs only on mount for WebSocket
+  }, []);
 
   const handleDrawerExpand = () => {
     setExpand(!expand);
@@ -146,15 +132,12 @@ const Topbar = ({
     if (plant) {
       setSelectedPlant(plant);
       localStorage.setItem("selectedPlant", plant);
-
-      // Set the AI enabled state
       setAiEnabled(aiEnabled || false);
       localStorage.setItem("aiEnabled", aiEnabled ? "true" : "false");
     }
     setOpenPlantModal(false);
   };
 
-  // Load AI enabled state on component mount
   useEffect(() => {
     const savedAiState = localStorage.getItem("aiEnabled");
     if (savedAiState) {
@@ -166,12 +149,10 @@ const Topbar = ({
     const token = localStorage.getItem("token");
     if (!token) {
       console.error("Authentication token not found.");
-      // Handle missing token, e.g., redirect to login
       return;
     }
 
     if (!isDeveloperMode) {
-      // Switching to Developer View
       setConfirmationDialogContent({
         title: "Enable Developer Mode?",
         message: "This will trigger the ESP32 into developer mode for data collection. Do you want to continue?",
@@ -203,17 +184,15 @@ const Topbar = ({
             } else {
               console.log("AI disabled automatically when Developer Mode enabled.");
             }
-            toggleViewMode(); // Actual toggle after successful API call
+            toggleViewMode();
             console.log("Developer mode triggered");
           } catch (error) {
             console.error("Error triggering developer mode:", error);
-            // Optionally, show an error message to the user
           }
           setConfirmationDialogOpen(false);
         },
       });
     } else {
-      // Switching to User View
       setConfirmationDialogContent({
         title: "Disable Developer Mode?",
         message: "This will stop developer mode data collection on the ESP32. Do you want to continue?",
@@ -229,11 +208,10 @@ const Topbar = ({
             if (!response.ok) {
               throw new Error('Failed to stop developer mode.');
             }
-            toggleViewMode(); // Actual toggle after successful API call
+            toggleViewMode();
             console.log("Developer mode stopped");
           } catch (error) {
             console.error("Error stopping developer mode:", error);
-            // Optionally, show an error message to the user
           }
           setConfirmationDialogOpen(false);
         },
@@ -253,49 +231,79 @@ const Topbar = ({
         },
       }}
     >
-      <Stack px={3} py={2} alignItems="center" justifyContent="space-between">
-        <Stack spacing={{ xs: 2, sm: 3 }} alignItems="center">
+      <Toolbar
+        sx={{
+          px: { xs: 1, sm: 2, md: 3 },
+          py: { xs: 1, sm: 2 },
+          minHeight: { xs: 56, sm: 64 },
+        }}
+      >
+        {/* Left Section - Menu and Logo */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+          {/* Desktop menu button */}
+          <IconButton
+            color="inherit"
+            aria-label="expand drawer"
+            onClick={handleDrawerExpand}
+            edge="start"
+            sx={{ 
+              display: { xs: 'none', lg: 'flex' },
+              mr: 1
+            }}
+          >
+            <IconifyIcon icon={expand ? 'line-md:menu-fold-left' : 'line-md:menu-fold-right'} />
+          </IconButton>
+
+          {/* Mobile menu button */}
+          <IconButton
+            color="inherit"
+            aria-label="expand drawer"
+            onClick={handleMobileOpen}
+            edge="start"
+            sx={{ 
+              display: { xs: 'flex', lg: 'none' },
+              mr: 1
+            }}
+          >
+            <IconifyIcon icon="solar:hamburger-menu-outline" />
+          </IconButton>
+
+          {/* Logo - only show on sm screens */}
           <ButtonBase
             component={Link}
             href="/"
             disableRipple
-            sx={{ lineHeight: 0, display: { xs: 'none', sm: 'block', lg: 'none' } }}
+            sx={{ 
+              lineHeight: 0, 
+              display: { xs: 'none', sm: 'block', lg: 'none' },
+              mr: 2
+            }}
           >
             <Image src={Logo} alt="logo" height={40} width={40} />
           </ButtonBase>
+        </Box>
 
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="expand drawer"
-              onClick={handleDrawerExpand}
-              edge="start"
-              sx={{ display: { xs: 'none', lg: 'flex' } }}
-            >
-              <IconifyIcon icon={expand ? 'line-md:menu-fold-left' : 'line-md:menu-fold-right'} />
-            </IconButton>
+        {/* Center Section - Search */}
+        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', mx: { xs: 1, sm: 2 } }}>
+          {/* Mobile search icon */}
+          <IconButton 
+            edge="start" 
+            color="inherit" 
+            aria-label="search"
+            sx={{ display: { xs: 'flex', md: 'none' } }}
+          >
+            <IconifyIcon icon="prime:search" />
+          </IconButton>
 
-            <IconButton
-              color="inherit"
-              aria-label="expand drawer"
-              onClick={handleMobileOpen}
-              edge="start"
-              sx={{ display: { xs: 'flex', lg: 'none' } }}
-            >
-              <IconifyIcon icon="solar:hamburger-menu-outline" />
-            </IconButton>
-          </Toolbar>
-
-          <Toolbar sx={{ ml: -1.5, display: { xm: 'block', md: 'none' } }}>
-            <IconButton edge="start" color="inherit" aria-label="search">
-              <IconifyIcon icon="prime:search" />
-            </IconButton>
-          </Toolbar>
-
+          {/* Desktop search field */}
           <TextField
             variant="filled"
             placeholder="Search"
-            sx={{ width: 300, display: { xs: 'none', md: 'flex' } }}
+            size="small"
+            sx={{ 
+              width: { md: 250, lg: 300 },
+              display: { xs: 'none', md: 'flex' }
+            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
@@ -304,62 +312,64 @@ const Topbar = ({
               ),
             }}
           />
-        </Stack>
+        </Box>
 
-        <Stack spacing={{ xs: 1, sm: 2 }} alignItems="center" direction="row">
-          {/* AI Indicator Chip - shown when AI is enabled */}
+        {/* Right Section - Controls */}
+        <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, gap: { xs: 0.5, sm: 1 } }}>
+          {/* AI Indicator Chip */}
           {aiEnabled && (
             <Chip
-
               label="AI"
               color="secondary"
               size="small"
-              sx={{ mr: 1 }}
+              sx={{ 
+                display: { xs: 'none', sm: 'flex' },
+                fontSize: '0.75rem',
+                height: 24
+              }}
             />
           )}
 
-          <IconButton onClick={() => setOpenPlantModal(true)} sx={{ ml: 2 }}>
-            <Avatar src={plantImages[selectedPlant]} sx={{ width: 48, height: 48 }} />
+          {/* Plant Selection Avatar */}
+          <IconButton 
+            onClick={() => setOpenPlantModal(true)}
+            sx={{ p: 0.5 }}
+          >
+            <Avatar 
+              src={plantImages[selectedPlant]} 
+              sx={{ 
+                width: { xs: 36, sm: 44 }, 
+                height: { xs: 36, sm: 44 } 
+              }} 
+            />
           </IconButton>
 
-          <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
-            <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
-          </Dialog>
-
+          {/* Developer Mode Toggle Button */}
           <Button
             variant="outlined"
             color="inherit"
-            onClick={handleToggleDeveloperMode} // Updated onClick handler
-            sx={{ mr: 1, minWidth: '120px' }}
+            onClick={handleToggleDeveloperMode}
+            sx={{
+              minWidth: { xs: 50, sm: 100 },
+              px: { xs: 0.5, sm: 2 },
+              py: { xs: 0.25, sm: 0.5 },
+              fontSize: { xs: '0.65rem', sm: '0.875rem' },
+              textTransform: 'none',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              height: { xs: 28, sm: 36 },
+            }}
           >
-            {isDeveloperMode ? "Developer View" : "User View"}
+            {isDeveloperMode ? "Dev" : "User"}
           </Button>
 
-          {/* Confirmation Dialog */}
-          <Dialog
-            open={confirmationDialogOpen}
-            onClose={() => setConfirmationDialogOpen(false)}
-            aria-labelledby="alert-dialog-title"
-            aria-describedby="alert-dialog-description"
-          >
-            <DialogTitle id="alert-dialog-title">{confirmationDialogContent.title}</DialogTitle>
-            <DialogContent>
-              <DialogContentText id="alert-dialog-description">
-                {confirmationDialogContent.message}
-              </DialogContentText>
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setConfirmationDialogOpen(false)} color="primary">
-                Cancel
-              </Button>
-              <Button onClick={() => {
-                confirmationDialogContent.onConfirm();
-              }} color="primary" autoFocus>
-                Confirm
-              </Button>
-            </DialogActions>
-          </Dialog>
+          {/* Dark Mode Toggle */}
+          <IconButton onClick={toggleDarkMode} color="inherit">
+            <IconifyIcon icon={isDarkMode ? 'solar:sun-bold' : 'solar:moon-bold'} />
+          </IconButton>
 
+          {/* Notification Bell */}
           <IconButton onClick={handleNotificationClick}>
             <Badge
               color="error"
@@ -369,9 +379,41 @@ const Topbar = ({
               <IconifyIcon icon="mdi:bell-outline" />
             </Badge>
           </IconButton>
+
+          {/* Profile Menu */}
           <ProfileMenu />
-        </Stack>
-      </Stack>
+        </Box>
+      </Toolbar>
+
+      {/* Plant Selection Dialog */}
+      <Dialog open={openPlantModal} onClose={() => setOpenPlantModal(false)}>
+        <PlantSelection open={openPlantModal} onClose={handlePlantSelect} />
+      </Dialog>
+
+      {/* Confirmation Dialog */}
+      <Dialog
+        open={confirmationDialogOpen}
+        onClose={() => setConfirmationDialogOpen(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">{confirmationDialogContent.title}</DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            {confirmationDialogContent.message}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmationDialogOpen(false)} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={() => {
+            confirmationDialogContent.onConfirm();
+          }} color="primary" autoFocus>
+            Confirm
+          </Button>
+        </DialogActions>
+      </Dialog>
     </AppBar>
   );
 };

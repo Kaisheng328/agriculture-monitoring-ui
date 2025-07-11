@@ -2,10 +2,23 @@ import { TypographyOptions } from '@mui/material/styles/createTypography';
 
 export const fontFamily = {
   nunito: ['Nunito', 'sans-serif'].join(','),
+  monospace: ['Menlo', 'Consolas', 'Monaco', 'Liberation Mono', 'Lucida Console', 'monospace'].join(','),
 };
+
+// Ensure this TypographyOptions interface includes your custom ones if you extend it elsewhere
+declare module '@mui/material/styles/createTypography' {
+  interface TypographyOptions {
+    fontFamilyMono?: string;
+  }
+
+  interface Typography {
+    fontFamilyMono?: string;
+  }
+}
 
 const typography: TypographyOptions = {
   fontFamily: fontFamily.nunito,
+  fontFamilyMono: fontFamily.monospace, // Correctly placed here
   h1: {
     fontSize: '2.25rem',
     fontWeight: 700,
