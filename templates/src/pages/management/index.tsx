@@ -1,7 +1,9 @@
 
-import { Box, Typography, Grid } from '@mui/material';
+import { Box, Typography, Grid, Button } from '@mui/material';
+import { Link } from 'react-router-dom';
 import Management from 'components/sections/management/index';
 import AdminPromotionButton from './custombutton';
+import paths from 'routes/paths';
 
 const ManagementPage = () => {
   return (
@@ -12,6 +14,11 @@ const ManagementPage = () => {
         </Typography>
         <Grid item xs={12}>
           <AdminPromotionButton />
+        </Grid>
+        <Grid item xs={12}>
+            <Button component={Link} to={paths.aiModel} variant="contained">
+              View AI Model Details
+            </Button>
         </Grid>
         <Grid item xs={12}>
           <Management />

@@ -15,6 +15,7 @@ export default {
   notification: `/${rootPaths.pageRoot}/notification`,
   settings: `/${rootPaths.pageRoot}/settings`,
   management: `/${rootPaths.pageRoot}/management`,
+  aiModel: `/${rootPaths.pageRoot}/management/ai-model`,
   signin: `/${rootPaths.authRoot}/signin`,
   signup: `/${rootPaths.authRoot}/signup`,
   resetPassword: `/${rootPaths.authRoot}/reset-password`,

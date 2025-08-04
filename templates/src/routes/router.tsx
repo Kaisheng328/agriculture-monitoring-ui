@@ -15,6 +15,7 @@ const ResetPassword = lazy(() => import('pages/authentication/ResetPassword'));
 const Error404 = lazy(() => import('pages/errors/Error404'));
 const Notification = lazy(() => import('pages/notification'));
 const Management = lazy(() => import('pages/management'));
+const AiModelDetails = lazy(() => import('pages/management/AiModelDetails'));
 const Guideline = lazy(() => import('pages/guideline'));
 const routes = [
   
@@ -46,6 +47,10 @@ const routes = [
           {
             path: paths.management, // Add the Notification route
             element: <Management />,
+          },
+          {
+            path: paths.aiModel,
+            element: <AiModelDetails />,
           },
           {
             path: paths.guideline, // Add the Notification route

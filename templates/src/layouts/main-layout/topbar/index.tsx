@@ -3,10 +3,8 @@ import Button from '@mui/material/Button';
 import Badge from '@mui/material/Badge';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
-import TextField from '@mui/material/TextField';
 import ButtonBase from '@mui/material/ButtonBase';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import IconifyIcon from 'components/base/IconifyIcon';
 import Image from 'components/base/Image';
 import ProfileMenu from './ProfileMenu';
@@ -19,7 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import Avatar from "@mui/material/Avatar";
 import PlantSelection from "./PlantSelection";
 import hebeImg from "assets/images/hebeimg.jpeg";
-import basilImg from "assets/images/Logo.png";
+import snakeImg from "assets/images/snakeimg.jpeg";
 import Chip from "@mui/material/Chip";
 import {
   Dialog,
@@ -41,7 +39,7 @@ interface TopbarProps {
 
 const plantImages: Record<string, string> = {
   "Hebe andersonii": hebeImg,
-  "Basil": basilImg,
+  "Snake Plant": snakeImg,
 };
 
 const Topbar = ({
@@ -282,37 +280,9 @@ const Topbar = ({
             <Image src={Logo} alt="logo" height={40} width={40} />
           </ButtonBase>
         </Box>
+        <Box sx={{ flexGrow: 1 }} />
 
-        {/* Center Section - Search */}
-        <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', mx: { xs: 1, sm: 2 } }}>
-          {/* Mobile search icon */}
-          <IconButton 
-            edge="start" 
-            color="inherit" 
-            aria-label="search"
-            sx={{ display: { xs: 'flex', md: 'none' } }}
-          >
-            <IconifyIcon icon="prime:search" />
-          </IconButton>
-
-          {/* Desktop search field */}
-          <TextField
-            variant="filled"
-            placeholder="Search"
-            size="small"
-            sx={{ 
-              width: { md: 250, lg: 300 },
-              display: { xs: 'none', md: 'flex' }
-            }}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconifyIcon icon="prime:search" />
-                </InputAdornment>
-              ),
-            }}
-          />
-        </Box>
+       
 
         {/* Right Section - Controls */}
         <Box sx={{ display: 'flex', alignItems: 'center', flexShrink: 0, gap: { xs: 0.5, sm: 1 } }}>
@@ -323,7 +293,7 @@ const Topbar = ({
               color="secondary"
               size="small"
               sx={{ 
-                display: { xs: 'none', sm: 'flex' },
+                display:'flex',
                 fontSize: '0.75rem',
                 height: 24
               }}
