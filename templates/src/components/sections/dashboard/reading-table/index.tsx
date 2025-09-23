@@ -182,8 +182,8 @@ const History = () => {
       case 'initial':
         return (
           <Stack spacing={2} sx={{ mt: 2 }}>
-            <Button variant="contained" onClick={handleDownloadCsv}>Download CSV</Button>
             <Button variant="contained" color="primary" onClick={handleTrainModelClick}>Train Model</Button>
+            <Button variant="contained" onClick={handleDownloadCsv}>Download CSV</Button>
           </Stack>
         );
       case 'selectPlant':
@@ -303,7 +303,7 @@ const History = () => {
             }}
           />
           <Button variant="contained" onClick={handleSyncClick}>Sync</Button>
-          <Button variant="contained" color="secondary" onClick={() => setIsModalOpen(true)}>CSV</Button>
+          <Button variant="contained" color="secondary" onClick={() => setIsModalOpen(true)}>Train</Button>
         </Stack>
       </Stack>
 

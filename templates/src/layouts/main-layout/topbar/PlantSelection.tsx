@@ -98,7 +98,14 @@ const PlantSelection = ({ open, onClose }: PlantSelectionProps) => {
                     alt={plant}
                     sx={{ width: 36, height: 36, mr: 2 }}
                   />
-                  <ListItemText primary={plant} />
+                  <ListItemText 
+                    primary={plant} 
+                    sx={{
+                      '& .MuiListItemText-primary': {
+                        color: 'text.primary' // This will make the text black/primary color
+                      }
+                    }}
+                  />
                 </>
               </ListItemButton>
             </ListItem>
